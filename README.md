@@ -4,7 +4,7 @@ I want to create (or welcome contributions) to develop a solution for a simple s
 
 This is purely an exercise for my own and others' learning.  
 
-Preferred languages are Python, Java, or Kotlin. 
+Preferred languages are Python, Java, or Kotlin. Please use only lightweight libraries like Numpy or ND4J.
 
 Here is a starting data set: 
 
