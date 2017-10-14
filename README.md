@@ -26,11 +26,11 @@ Here is a starting data set:
 * ROOM B
 * ROOM C
 
-**Availability for each day of week:**
+**Availability for each day Monday-Friday:**
 
 * 8:00AM-11:30AM
 * 1:00PM-5:00PM
 
 
-Obviously, a room cannot be occupied by more than one class at any time. 
+Obviously, a room cannot be occupied by more than one class at any time. If the solver cannot find a solution, it should raise an error indicating no solution exists. 
 
