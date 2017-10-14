@@ -2,6 +2,8 @@
 
 I want to create (or welcome contributions) to develop a solution for a simple scenario: scheduling university classes across a limited set of classrooms over a week. I'd strongly prefer a mathematical approach using linear algebra techniques rather than a brute-force approach. 
 
+This is purely an exercise for my own (and others') learning. 
+
 Preferred languages are Python, Java, or Kotlin. 
 
 Here is a starting data set: 
