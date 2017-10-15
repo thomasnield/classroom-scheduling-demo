@@ -19,12 +19,16 @@ Here is a starting data set:
 7) Sociology 101 (1 hour, 2 sessions/week)
 8) Sociology 102 (1 hour, 2 sessions/week)
 
-
 **Rooms:**
 
+Let's just start with one room. Bonus points if more rooms can be added to the model. 
+
 * ROOM A
-* ROOM B
-* ROOM C
+* ~ROOM B~
+* ~ROOM C~
+
+
+Let's start with 
 
 **Availability for each day Monday-Friday:**
 
