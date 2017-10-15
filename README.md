@@ -24,9 +24,6 @@ Here is a starting data set:
 Let's just start with one room to constrain capacity. Bonus points if more rooms/classes can be added as arguments to the model. 
 
 * ROOM A
-* ~ROOM B~
-* ~ROOM C~
-
 
 Let's start with 
 
