@@ -25,7 +25,6 @@ Let's just start with one room to constrain capacity. Bonus points if more rooms
 
 * ROOM A
 
-Let's start with 
 
 **Availability for each day Monday-Friday:**
 
