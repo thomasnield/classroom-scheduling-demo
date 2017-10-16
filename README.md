@@ -44,3 +44,5 @@ https://github.com/PyconUK/ConferenceScheduler
 http://vknight.org/unpeudemath/mathematics/2017/03/01/Scheduling-class-presentations-using-pulp.html
 
 https://blogs.mathworks.com/loren/2016/01/06/generating-an-optimal-employee-work-schedule-using-integer-linear-programming/
+
+http://benalexkeen.com/linear-programming-with-python-and-pulp/
