@@ -41,4 +41,4 @@ If this initial iteration gets solved, I may add more constraints.
 
 https://github.com/PyconUK/ConferenceScheduler
 
-
+http://vknight.org/unpeudemath/mathematics/2017/03/01/Scheduling-class-presentations-using-pulp.html
