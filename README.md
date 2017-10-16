@@ -35,3 +35,10 @@ Let's just start with one room to constrain capacity. Bonus points if more rooms
 Obviously, a room cannot be occupied by more than one class at any time. If the solver cannot find a solution, it should raise an error indicating no solution exists. 
 
 If this initial iteration gets solved, I may add more constraints. 
+
+
+# Notable Links
+
+https://github.com/PyconUK/ConferenceScheduler
+
+
