@@ -10,15 +10,6 @@ val operatingTimes = listOf(
         LocalTime.of(13,0)..LocalTime.of(17,0)
 )
 
-// Operating DateTimes
-val availableBlocks = generateSequence(operatingDates.start) {
-    it.plusDays(1).takeIf { it <= operatingDates.endInclusive }
-}.flatMap { dt ->
-    operatingTimes.asSequence()
-            .map { dt.atTime(it.start)..dt.atTime(it.endInclusive) }
-}.map { AvailableRange(it) }
-.toList()
-
 
 // classes
 val scheduledClasses = listOf(
@@ -31,12 +22,6 @@ val scheduledClasses = listOf(
         //ScheduledClass(id=7, name="Sociology 101", hoursLength=1.0, repetitions=2)
         //ScheduledClass(id=8, name="Biology 101", hoursLength=1.0, repetitions=2)
 )
-
-
-val windowRange = availableBlocks.map { it.dateTimeRange.start }.min()!! .. availableBlocks.asSequence().map { it.dateTimeRange.endInclusive }.max()!!
-val windowRangeDiscrete = windowRange.asDiscrete()
-val windowLength = windowRangeDiscrete.asSequence().count()
-
 
 
 fun main(args: Array<String>) {

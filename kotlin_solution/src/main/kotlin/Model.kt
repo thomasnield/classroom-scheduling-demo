@@ -11,6 +11,22 @@ fun variable() = Variable(variableId.incrementAndGet().toString().let { "Variabl
 fun ExpressionsBasedModel.addExpression() = funcId.incrementAndGet().let { "Func$it"}.let { model.addExpression(it) }
 
 
+
+// Operating DateTimes
+val availableBlocks = generateSequence(operatingDates.start) {
+    it.plusDays(1).takeIf { it <= operatingDates.endInclusive }
+}.flatMap { dt ->
+    operatingTimes.asSequence()
+            .map { dt.atTime(it.start)..dt.atTime(it.endInclusive) }
+}.map { AvailableRange(it) }
+.toList()
+
+
+val windowRange = availableBlocks.map { it.dateTimeRange.start }.min()!! .. availableBlocks.asSequence().map { it.dateTimeRange.endInclusive }.max()!!
+val windowRangeDiscrete = windowRange.asDiscrete()
+val windowLength = windowRangeDiscrete.asSequence().count()
+
+
 fun addModelHelpers() {
 
     // First session of classes with three repetitions should start on Monday
