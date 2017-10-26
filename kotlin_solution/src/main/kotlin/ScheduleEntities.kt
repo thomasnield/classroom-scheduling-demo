@@ -87,12 +87,32 @@ data class Session(val id: Int,
                             .set(overlapSwitch, windowLength)
                 }
 
-        // put at least 15 minutes between each class
 
+        // put at least 15 minutes (1 discrete interval) between each class
+
+        /*
         scheduledClasses.asSequence()
                 .filter { it != this.parentClass }
+                .flatMap { it.scheduledSessions.asSequence() }
+                .forEach {
 
+                    val switch = variable().binary()
 
+                    // Ei - Sj >= 1 - 1000b
+                    model.addExpression()
+                            .lower(1)
+                            .set(endDiscrete, 1)
+                            .set(it.startDiscrete, -1)
+                            .set(switch, windowLength)
+
+                    // Ej - Si >= 1 - 1000(1-b)
+                    model.addExpression()
+                            .lower(1 - windowLength)
+                            .set(it.endDiscrete, 1)
+                            .set(startDiscrete, -1)
+                            .set(switch, windowLength)
+                }
+*/
 
         /*
         // limit to allowable times
