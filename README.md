@@ -1,6 +1,7 @@
-# Class Scheduling Algorithm Demo
+# Schedule Generator Demo
+### Using Linear Optimization
 
-I have successfuly done my first exercise at creating a class schedule optimizer, although I'm looking to still add a few refinements.
+I have successfuly done my first exercise at creating a class schedule generator using [linear optimzation](https://en.wikipedia.org/wiki/Linear_programming), although I'm looking to still add a few refinements.
 
 I used [Kotlin](http://kotlinlang.org/) with [ojAlgo](http://www.ojalgo.org/), which turned out to be a pretty great stack.
 
@@ -58,7 +59,7 @@ Linear Algebra I-3 FRIDAY 15:00..17:00
 
 Build the Kotlin project with Gradle, then run the `main()` function inside the `InputAndRun.kt` file. You can also change the hardcoded inputs in that file too.
 
-This can take a few minutes to run depending on your machine's computing power. My Surface Pro ran hot executing the solve, and my game-powered desktop was noisy. I learned I could put a few functions in the model to gently guide it away from unncessary territory. For instance, classes with 3 repetitions a week need to have the first session on Monday. There's no reason why
+This can take a few minutes to run depending on your machine's computing power. My Surface Pro ran hot executing the solver. I learned I could put a few functions in the model to gently guide it away from unncessary territory. For instance, classes with 3 repetitions a week need to have the first session on Monday. There's no reason why
 
 ## Observations
 
@@ -72,6 +73,7 @@ It was satisfying that Kotlin allowed me to create something procedural and hack
 
 ## Roadmap
 
-[] Constrain scheduling to only available times above
-[] Put 15 minute gaps between each class
-[] Wrap TornadoFX user interface around model
+* Constrain scheduling to only available times above
+* Put 15 minute gaps between each class
+* Wrap TornadoFX user interface around model
+* Support multiple rooms
