@@ -1,7 +1,7 @@
 # Schedule Generator Demo
 ### Using Linear Optimization
 
-I have successfuly done my first exercise at creating a class schedule optimizer, although I'm looking to still add a few refinements.
+I have successfuly done my first exercise at creating a class schedule generator using [linear optimzation](https://en.wikipedia.org/wiki/Linear_programming), although I'm looking to still add a few refinements.
 
 I used [Kotlin](http://kotlinlang.org/) with [ojAlgo](http://www.ojalgo.org/), which turned out to be a pretty great stack.
 
