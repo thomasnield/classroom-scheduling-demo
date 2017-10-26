@@ -72,6 +72,7 @@ It was satisfying that Kotlin allowed me to create something procedural and hack
 
 ## Roadmap
 
-[] Constrain scheduling to only available times above
-[] Put 15 minute gaps between each class
-[] Wrap TornadoFX user interface around model
+* Constrain scheduling to only available times above
+* Put 15 minute gaps between each class
+* Wrap TornadoFX user interface around model
+* Support multiple rooms
