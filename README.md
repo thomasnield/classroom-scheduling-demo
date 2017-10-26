@@ -1,6 +1,6 @@
 # Class Scheduling Algorithm Demo
 
-I have successfuly done my first pass at creating a university class schedule optimizer, although I'm looking to still add a few refinements.
+I have successfuly done my first exercise at creating a class schedule optimizer, although I'm looking to still add a few refinements.
 
 I used [Kotlin](http://kotlinlang.org/) with [ojAlgo](http://www.ojalgo.org/), which turned out to be a pretty great stack.
 
