@@ -1,5 +1,5 @@
 # Schedule Generator Demo
-## Using Linear Optimization
+### Using Linear Optimization
 
 I have successfuly done my first exercise at creating a class schedule optimizer, although I'm looking to still add a few refinements.
 
