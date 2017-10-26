@@ -1,4 +1,4 @@
-# Class Scheduling Algorithm Demo
+# Linear Optimization Demo
 
 I have successfuly done my first exercise at creating a class schedule optimizer, although I'm looking to still add a few refinements.
 
