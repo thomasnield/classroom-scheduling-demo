@@ -25,7 +25,7 @@ Here is the starting data set:
 
 I set the model to put each recurring session 48 hours apart.
 
-**Availability for each day Monday-Friday:**
+**Availability for each day Monday-Friday:  (in development)**
 
 * 8:00AM-11:30AM
 * 1:00PM-5:00PM
