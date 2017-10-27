@@ -58,7 +58,7 @@ Linear Algebra I-3 FRIDAY 15:00..17:00
 
 I'll put a TornadoFX user interface around this later. But here is a visual of the current output. 
 
-![](blob:https://imgur.com/dc1ff37f-4d48-4112-9781-0986950940e2)
+![](https://imgur.com/a/joye2)
 
 ## How to Execute
 
