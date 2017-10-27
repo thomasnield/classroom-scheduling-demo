@@ -1,7 +1,7 @@
 # Schedule Generator Demo
 ### Using Linear Optimization
 
-I have successfuly done my first exercise at creating a class schedule generator using [linear optimzation](https://en.wikipedia.org/wiki/Linear_programming), although I'm looking to still add a few refinements.
+I have successfuly done my first exercise at creating a class schedule generator using [linear optimization](https://en.wikipedia.org/wiki/Linear_programming), although I'm looking to still add a few refinements.
 
 I used [Kotlin](http://kotlinlang.org/) with [ojAlgo](http://www.ojalgo.org/), which turned out to be a pretty great stack.
 
@@ -58,7 +58,7 @@ Linear Algebra I-3 FRIDAY 15:00..17:00
 
 I'll put a TornadoFX user interface around this later. But here is a visual of the current output. 
 
-![](https://i.imgur.com/1CSJrtA.png)
+![](https://i.imgur.com/0hL9aGa.png)
 
 As soon as the time constraints are successfully implemented, it should naturally move Calculus I to the morning. 
 
