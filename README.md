@@ -21,7 +21,7 @@ Here is the starting data set:
 5) Calculus I (2 hours, 2 sessions/week)
 6) Linear Algebra I (2 hours, 3 sessions/week)
 7) Sociology 101 (1 hour, 2 sessions/week)
-8) Sociology 102 (1 hour, 2 sessions/week)
+8) Biology 101 (1 hour, 2 sessions/week)
 
 I set the model to put each recurring session 48 hours apart.
 
