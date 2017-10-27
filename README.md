@@ -60,6 +60,8 @@ I'll put a TornadoFX user interface around this later. But here is a visual of t
 
 ![](https://i.imgur.com/1CSJrtA.png)
 
+As soon as the time constraints are successfully implemented, it should naturally move Calculus I to the morning. 
+
 ## How to Execute
 
 Build the Kotlin project with Gradle, then run the `main()` function inside the `InputAndRun.kt` file. You can also change the hardcoded inputs in that file too.
