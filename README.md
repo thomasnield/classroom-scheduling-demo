@@ -1,9 +1,9 @@
 # Schedule Generator Demo
 ### Using Linear Optimization
 
-I have successfuly done my first exercise at creating a class schedule generator using [linear optimization](https://en.wikipedia.org/wiki/Linear_programming), although I'm looking to still add a few refinements.
+This is an exercise at creating a class schedule generator using [linear optimization](https://en.wikipedia.org/wiki/Linear_programming), although I'm looking to still add a few refinements.
 
-I used [Kotlin](http://kotlinlang.org/) with [ojAlgo](http://www.ojalgo.org/), which turned out to be a pretty great stack.
+I used [Kotlin](http://kotlinlang.org/) with [ojAlgo](http://www.ojalgo.org/), which turned out to be an effective stack.
 
 For now, the model just assumes we are scheduling against one room.
 
