@@ -80,9 +80,14 @@ It was satisfying that Kotlin allowed me to create something procedural and hack
 
 ## Roadmap
 
-[] Optimize non-overlap binary constraints for discrete values, not linear
-[] Explore [OptaPlanner](https://docs.optaplanner.org/7.4.1.Final/optaplanner-docs/html_single/index.html) implementation 
-[] Constrain scheduling to only available times above
-[] Put 15 minute gaps between each class
-[] Wrap TornadoFX user interface around model
-[] Support multiple rooms
+* [] Optimize non-overlap binary constraints for discrete values, not linear
+
+* [] Explore [OptaPlanner](https://docs.optaplanner.org/7.4.1.Final/optaplanner-docs/html_single/index.html) implementation 
+
+* [] Constrain scheduling to only available times above
+
+* [] Put 15 minute gaps between each class
+
+* [] Wrap TornadoFX user interface around model
+
+* [] Support multiple rooms
