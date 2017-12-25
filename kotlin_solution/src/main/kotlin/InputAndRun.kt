@@ -24,7 +24,6 @@ val scheduledClasses = listOf(
         ScheduledClass(id=7, name="Sociology 101", hoursLength=1.0, repetitions=2),
         ScheduledClass(id=8, name="Biology 101", hoursLength=1.0, repetitions=2)*/
 )
-gi
 
 fun main(args: Array<String>) {
     println("Job started at ${LocalTime.now()}")
