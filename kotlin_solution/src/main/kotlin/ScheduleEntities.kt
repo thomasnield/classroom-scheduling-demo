@@ -43,15 +43,20 @@ data class ScheduledClass(val id: Int,
         //guide 3 repetitions to be fixed on MONDAY, WEDNESDAY, FRIDAY
         if (repetitions == 3) {
             sessions.forEach { session ->
+                val f = addExpression().level(session.blocksNeeded)
+
                 session.occupationStates.asSequence()
-                        .filter { it.block.dateTimeRange.start.dayOfWeek != when(session.repetitionIndex) {
-                            1 -> DayOfWeek.MONDAY
-                            2 -> DayOfWeek.WEDNESDAY
-                            3 -> DayOfWeek.FRIDAY
-                            else -> throw Exception("Must be 1/2/3")
-                        } }
+                        .filter {
+                            it.block.dateTimeRange.start.dayOfWeek ==
+                                    when(session.repetitionIndex) {
+                                        1 -> DayOfWeek.MONDAY
+                                        2 -> DayOfWeek.WEDNESDAY
+                                        3 -> DayOfWeek.FRIDAY
+                                        else -> throw Exception("Must be 1/2/3")
+                                    }
+                        }
                         .forEach {
-                            addExpression().level(0).set(it.occupied,1)
+                            f.set(it.occupied,1)
                         }
             }
         }
@@ -91,20 +96,21 @@ data class Session(val id: Int,
 
     fun addConstraints() {
 
+        val f1 = addExpression().level(0)
         //block out exceptions
         occupationStates.asSequence()
                 .filter { os -> breaks.any { os.block.timeRange.start in it } || os.block.timeRange.start !in operatingDay }
                 .forEach {
                     // b = 0, where b is occupation state
                     // this means it should never be occupied
-                    addExpression().upper(0).set(it.occupied, 1)
+                    f1.set(it.occupied, 1)
                 }
 
         //sum of all boolean states for this session must equal the # blocks needed
-        val f = addExpression().level(blocksNeeded)
+        val f2 = addExpression().level(blocksNeeded)
 
         occupationStates.forEach {
-            f.set(it.occupied, 1)
+            f2.set(it.occupied, 1)
         }
 
 
