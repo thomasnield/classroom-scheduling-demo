@@ -1,21 +1,72 @@
+import java.time.DayOfWeek
 import java.time.LocalDateTime
+import java.util.concurrent.atomic.AtomicInteger
 
-data class AvailableRange(val dateTimeRange: ClosedRange<LocalDateTime>) {
 
-    val discreteRange = dateTimeRange.asDiscrete()
+
+data class Block(val dateTimeRange: ClosedRange<LocalDateTime>) {
+
+    val timeRange = dateTimeRange.let { it.start.toLocalTime()..it.endInclusive.toLocalTime() }
+
+    fun addConstraints() {
+        val f = addExpression().upper(1)
+
+        OccupationState.all.filter { it.block == this }.forEach {
+            f.set(it.occupied, 1)
+        }
+    }
+    companion object {
+
+        // Operating blocks
+        val all by lazy {
+            generateSequence(operatingDates.start.atStartOfDay()) {
+                it.plusMinutes(15).takeIf { it.plusMinutes(15) <= operatingDates.endInclusive.atTime(23,59) }
+            }.map { Block(it..it.plusMinutes(15)) }
+             .toList()
+        }
+    }
 }
+
 
 data class ScheduledClass(val id: Int,
                           val name: String,
                           val hoursLength: Double,
                           val repetitions: Int) {
 
-    val scheduledSessions by lazy {
-        (1..repetitions).asSequence()
-                .map { Session(id, name, hoursLength, it, this) }
-                .toList()
+    val sessions by lazy {
+        Session.all.filter { it.parentClass == this }
     }
-    fun addConstraints() = scheduledSessions.forEach { it.addConstraints() }
+
+    fun addConstraints() {
+
+        //guide 3 repetitions to be fixed on MONDAY, WEDNESDAY, FRIDAY
+        if (repetitions == 3) {
+            sessions.forEach { session ->
+                session.occupationStates.asSequence()
+                        .filter { it.block.dateTimeRange.start.dayOfWeek != when(session.repetitionIndex) {
+                            1 -> DayOfWeek.MONDAY
+                            2 -> DayOfWeek.WEDNESDAY
+                            3 -> DayOfWeek.FRIDAY
+                            else -> throw Exception("Must be 1/2/3")
+                        } }
+                        .forEach {
+                            addExpression().level(0).set(it.occupied,1)
+                        }
+            }
+        }
+
+        //guide two repetitions to be 48 hours apart (in development)
+        if (repetitions == 2) {
+            val first = sessions.find { it.repetitionIndex == 1 }!!
+            val second = sessions.find { it.repetitionIndex == 2 }!!
+
+
+        }
+    }
+
+    companion object {
+        val all by lazy { scheduledClasses }
+    }
 }
 
 
@@ -25,130 +76,84 @@ data class Session(val id: Int,
                    val repetitionIndex: Int,
                    val parentClass: ScheduledClass) {
 
-    val discreteLength = (hoursLength * 4).toInt()
+    val blocksNeeded = (hoursLength * 4).toInt()
 
-    val startDiscrete = variable().integer(true).lower(windowRangeDiscrete.start).upper(windowRangeDiscrete.endInclusive)
-    val endDiscrete = variable().integer(true).lower(windowRangeDiscrete.start).upper(windowRangeDiscrete.endInclusive)
+    val occupationStates by lazy {
+        OccupationState.all.asSequence().filter { it.session == this }.toList()
+    }
 
-    val discreteRange get() = startDiscrete.value.toInt()..endDiscrete.value.toInt()
-    val dateTimeRange get() = (startDiscrete.value.toInt()..endDiscrete.value.toInt()).asLocalDateTime()
+    val start get() = occupationStates.asSequence().filter { it.occupied.value.toInt() == 1 }
+            .map { it.block.dateTimeRange.start }
+            .min()!!
 
-    val date get() = dateTimeRange.first.toLocalDate()
-    val timeRange get() = dateTimeRange.let { it.first.toLocalTime()..it.second.toLocalTime() }
+    val end get() = occupationStates.asSequence().filter { it.occupied.value.toInt() == 1 }
+            .map { it.block.dateTimeRange.endInclusive }
+            .max()!!
 
     fun addConstraints() {
 
-        //limit length of class
-        model.addExpression()
-                .level(discreteLength)
-                .set(endDiscrete, 1)
-                .set(startDiscrete, -1)
-
-        // 2 <= E - S
-        model.addExpression()
-                .lower(2)
-                .set(startDiscrete,-1)
-                .set(endDiscrete, 1)
-
-        // keep repetitions consecutive and 48 hours apart
-        // Sj = Si + (48 * 4)
-        parentClass.scheduledSessions
-                .asSequence()
-                .filter { it.repetitionIndex == repetitionIndex - 1 }
-                .forEach { otherSession ->
-
-                    model.addExpression()
-                            .level(48 * 4)
-                            .set(startDiscrete, 1)
-                            .set(otherSession.startDiscrete, -1)
-                }
-
-        // don't overlap with other classes
-        scheduledClasses.asSequence()
-                .flatMap { it.scheduledSessions.asSequence() }
-                .filter { it != this }
-                .forEach { other ->
-                    val overlapSwitch = variable().binary()
-
-                    // Si >= Ej - 1000b
-                    // 0 >= Ej - Si - 1000b
-                    model.addExpression()
-                            .upper(0)
-                            .set(other.endDiscrete, 1)
-                            .set(startDiscrete, -1)
-                            .set(overlapSwitch,-windowLength)
-
-                    // Sj >= Ei - 1000(1-b)
-                    // 1000 >= Ei - Sj + 1000b
-                    model.addExpression()
-                            .upper(windowLength)
-                            .set(endDiscrete, 1)
-                            .set(other.startDiscrete, -1)
-                            .set(overlapSwitch, windowLength)
-                }
-
-
-        // put at least 15 minutes (1 discrete interval) between each class
-
-        /*
-        scheduledClasses.asSequence()
-                .filter { it != this.parentClass }
-                .flatMap { it.scheduledSessions.asSequence() }
+        //only operate within allowed time window
+        occupationStates.asSequence()
+                .filter { os -> !operatingTimes.any { ot -> os.block.timeRange.start in ot } }
                 .forEach {
-
-                    val switch = variable().binary()
-
-                    // Ei - Sj >= 1 - 1000b
-                    model.addExpression()
-                            .lower(1)
-                            .set(endDiscrete, 1)
-                            .set(it.startDiscrete, -1)
-                            .set(switch, windowLength)
-
-                    // Ej - Si >= 1 - 1000(1-b)
-                    model.addExpression()
-                            .lower(1 - windowLength)
-                            .set(it.endDiscrete, 1)
-                            .set(startDiscrete, -1)
-                            .set(switch, windowLength)
+                    // b = 0, where b is occupation state
+                    // this means it should never be occupied
+                    addExpression().upper(0).set(it.occupied, 1)
                 }
-*/
 
-        /*
-        // limit to allowable times
-        availableBlocks.asSequence().flatMap { block ->
-            availableBlocks.asSequence()
-                    .filter { it != block }
-                    .map { block to it }
-        }.forEach { (block, otherblock) ->
+        //sum of all boolean states for this session must equal the # blocks needed
+        val f = addExpression().level(blocksNeeded)
 
-            sequenceOf(startDiscrete, endDiscrete).forEach { classTime ->
-
-                val binarySwitch =  variable().binary()
-
-                // 1000b + Ei = 1000 + S
-                model.addExpression()
-                        .lower(block.discreteRange.start - windowLength)
-                        .set(classTime, 1)
-                        .set(binarySwitch, - windowLength)
-
-                model.addExpression()
-                        .upper(block.discreteRange.endInclusive - windowLength)
-                        .set(classTime, 1)
-                        .set(binarySwitch, - windowLength)
-
-                model.addExpression()
-                        .lower(otherblock.discreteRange.start)
-                        .set(classTime, 1)
-                        .set(binarySwitch, windowLength)
-
-                model.addExpression()
-                        .upper(otherblock.discreteRange.endInclusive)
-                        .set(classTime, 1)
-                        .set(binarySwitch, -windowLength)
-            }
+        occupationStates.forEach {
+            f.set(it.occupied, 1)
         }
-*/
+
+        //ensure all occupied blocks are consecutive
+        val grouper = AtomicInteger(-1)
+        val consecutiveStateConstraint = addExpression().level(1)
+
+        occupationStates.asSequence().groupBy { grouper.incrementAndGet() / blocksNeeded }
+                .values
+                .forEach { grp ->
+                    val slotForGroup = variable().binary()
+
+                    consecutiveStateConstraint.set(slotForGroup, 1)
+
+                    addExpression().upper(0).apply {
+                        grp.forEach {
+                            set(it.occupied,1)
+                        }
+                        set(slotForGroup, -1 * blocksNeeded)
+                    }
+                }
+    }
+
+    companion object {
+        val all by lazy {
+            ScheduledClass.all.asSequence().flatMap { sc ->
+                (1..sc.repetitions).asSequence()
+                        .map { Session(sc.id, sc.name, sc.hoursLength, it, sc) }
+            }.toList()
+        }
     }
 }
 
+data class OccupationState(val block: Block, val session: Session) {
+    val occupied = variable().binary()
+
+    companion object {
+
+        val all by lazy {
+            Block.all.asSequence().flatMap { b ->
+                Session.all.asSequence().map { OccupationState(b,it) }
+            }.toList()
+        }
+    }
+}
+
+
+fun applyConstraints() {
+    Session.all.forEach { it.addConstraints() }
+    ScheduledClass.all.forEach { it.addConstraints() }
+    Block.all.forEach { it.addConstraints() }
+}

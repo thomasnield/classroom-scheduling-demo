@@ -14,7 +14,7 @@ val operatingTimes = listOf(
 // classes
 val scheduledClasses = listOf(
         ScheduledClass(id=1, name="Psych 101", hoursLength=1.0, repetitions=2),
-        ScheduledClass(id=2, name="English 101", hoursLength=1.5, repetitions=2),
+        ScheduledClass(id=2, name="English 101", hoursLength=1.5, repetitions=3),
         ScheduledClass(id=3, name="Math 300", hoursLength=1.5, repetitions=2),
         ScheduledClass(id=4, name="Psych 300", hoursLength=3.0, repetitions=1),
         ScheduledClass(id=5, name="Calculus I", hoursLength=2.0, repetitions=2),
@@ -26,14 +26,10 @@ val scheduledClasses = listOf(
 
 fun main(args: Array<String>) {
 
-    scheduledClasses.forEach { it.addConstraints() }
-    addModelHelpers()
-
+    applyConstraints()
     println(model.minimise())
 
-    scheduledClasses.asSequence()
-            .flatMap { it.scheduledSessions.asSequence() }
-            .sortedBy { it.dateTimeRange.first }.forEach {
-                println("${it.name}-${it.repetitionIndex} ${it.date.dayOfWeek} ${it.timeRange}")
-            }
+    Session.all.forEach {
+        println("${it.name}-${it.repetitionIndex}: ${it.start.dayOfWeek} ${it.start.toLocalTime()}-${it.end.toLocalTime()}")
+    }
 }
