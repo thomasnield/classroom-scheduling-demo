@@ -1,7 +1,7 @@
 # Schedule Generator Demo
 ### Using Linear Optimization
 
-This is an exercise at creating a class schedule generator using [linear optimization](https://en.wikipedia.org/wiki/Linear_programming), although I'm looking to still add a few refinements.
+This is an exercise at creating a class schedule generator using [linear/integer optimization](https://en.wikipedia.org/wiki/Linear_programming), although I'm looking to still add a few refinements.
 
 I used [Kotlin](http://kotlinlang.org/) with [ojAlgo](http://www.ojalgo.org/), which turned out to be an effective stack.
 
@@ -25,13 +25,13 @@ Here is the starting data set:
 
 I set the model to put each recurring session 48 hours apart.
 
-**Availability for each day Monday-Friday:  (in development)**
+**Availability for each day Monday-Friday: **
 
 * 8:00AM-11:30AM
 * 1:00PM-5:00PM
 
 
-Obviously, a room cannot be occupied by more than one class at any time. The solver does this successfully and prevents any overlap in scheduling. However, I have not successfully constrained the availability to the times above.
+Obviously, a room cannot be occupied by more than one class at any time. The solver does this successfully and prevents any overlap in scheduling. 
 
 
 ## Program Output
@@ -55,13 +55,6 @@ Calculus I-2 THURSDAY 17:00..19:00
 Linear Algebra I-3 FRIDAY 15:00..17:00
 ```
 
-
-I'll put a TornadoFX user interface around this later. But here is a visual of the current output. 
-
-![](https://i.imgur.com/0hL9aGa.png)
-
-As soon as the time constraints are successfully implemented, it should naturally move Calculus I to the morning. 
-
 ## How to Execute
 
 Build the Kotlin project with Gradle, then run the `main()` function inside the `InputAndRun.kt` file. You can also change the hardcoded inputs in that file too.
@@ -70,7 +63,7 @@ This can take a few minutes to run depending on your machine's computing power. 
 
 ## Observations
 
-I studied linear programming for the past few weeks with both Python and Java libraries. One thing I noticed quickly is a lot of libraries implement models as a sea of numbers, which can be difficult to debug, refactor, and comprehend. By using Kotlin and ojAlgo, I was able to create a highly organized model that is easy to comprehend and evolve by utilizing classes, fluent functional pipelines, and the Java/Kotlin standard library.
+I studied linear/integer programming for the past few months with both Python and Java libraries. One thing I noticed quickly is a lot of libraries implement models as a sea of numbers, which can be difficult to debug, refactor, and comprehend. By using Kotlin and ojAlgo, I was able to create a highly organized model that is easy to comprehend and evolve by utilizing classes, fluent functional pipelines, and the Java/Kotlin standard library.
 
 The Java 8 Date/Time library was immensely helpful to turn 15-minute time increments into discrete integer intervals. The domain classes in my model were designed to provide both the `LocalDateTime` and discrete integer representations of time variables, making it friendly for both the model and developer.
 
@@ -80,14 +73,19 @@ It was satisfying that Kotlin allowed me to create something procedural and hack
 
 ## Roadmap
 
-* [ ] Optimize non-overlap binary constraints for discrete values, not linear
+* [x] Optimize non-overlap binary constraints for discrete values, not linear
 
-* [ ] Explore [OptaPlanner](https://docs.optaplanner.org/7.4.1.Final/optaplanner-docs/html_single/index.html) implementation 
+* [ ] Space out recurring classes by one day
 
-* [ ] Constrain scheduling to only available times above
+* [ ] Find performance bottlenecks
+
+* [x] Constrain scheduling to only available times above
 
 * [ ] Put 15 minute gaps between each class
 
 * [ ] Wrap TornadoFX user interface around model
 
 * [ ] Support multiple rooms
+
+* [ ] Explore [OptaPlanner](https://docs.optaplanner.org/7.4.1.Final/optaplanner-docs/html_single/index.html) implementation 
+
