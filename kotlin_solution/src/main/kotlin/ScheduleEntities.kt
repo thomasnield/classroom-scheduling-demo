@@ -19,9 +19,10 @@ data class Block(val dateTimeRange: ClosedRange<LocalDateTime>) {
 
         // Operating blocks
         val all by lazy {
-            generateSequence(operatingDates.start.atStartOfDay()) {
-                it.plusMinutes(15).takeIf { it.plusMinutes(15) <= operatingDates.endInclusive.atTime(23,59) }
-            }.map { Block(it..it.plusMinutes(15)) }
+            generateSequence(operatingDates.start.atTime(operatingDay.start)) {
+                it.plusMinutes(15).takeIf { it.plusMinutes(15) <= operatingDates.endInclusive.atTime(operatingDay.endInclusive) }
+            }.filter { it.toLocalTime() in operatingDay }
+             .map { Block(it..it.plusMinutes(15)) }
              .toList()
         }
     }
@@ -59,8 +60,6 @@ data class ScheduledClass(val id: Int,
         if (repetitions == 2) {
             val first = sessions.find { it.repetitionIndex == 1 }!!
             val second = sessions.find { it.repetitionIndex == 2 }!!
-
-
         }
     }
 
@@ -92,9 +91,9 @@ data class Session(val id: Int,
 
     fun addConstraints() {
 
-        //only operate within allowed time window
+        //block out exceptions
         occupationStates.asSequence()
-                .filter { os -> !operatingTimes.any { ot -> os.block.timeRange.start in ot } }
+                .filter { os -> breaks.any { os.block.timeRange.start in it } || os.block.timeRange.start !in operatingDay }
                 .forEach {
                     // b = 0, where b is occupation state
                     // this means it should never be occupied
@@ -107,6 +106,7 @@ data class Session(val id: Int,
         occupationStates.forEach {
             f.set(it.occupied, 1)
         }
+
 
         //ensure all occupied blocks are consecutive
         val grouper = AtomicInteger(-1)

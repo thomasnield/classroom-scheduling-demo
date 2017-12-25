@@ -1,13 +1,15 @@
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
 
 
 // Any Monday through Friday date range will work
 val operatingDates = LocalDate.of(2017,10,16)..LocalDate.of(2017,10,20)
+val operatingDay = LocalTime.of(8,0)..LocalTime.of(17,0)
 
-val operatingTimes = listOf(
-        LocalTime.of(8,0)..LocalTime.of(11,30),
-        LocalTime.of(13,0)..LocalTime.of(17,0)
+
+val breaks = listOf(
+        LocalTime.of(11,30)..LocalTime.of(13,0)
 )
 
 
@@ -25,11 +27,17 @@ val scheduledClasses = listOf(
 
 
 fun main(args: Array<String>) {
+    println("Job started at ${LocalTime.now()}")
 
     applyConstraints()
+    model.limitObjective(BigDecimal.ZERO,BigDecimal.ZERO)
+
     println(model.minimise())
 
     Session.all.forEach {
         println("${it.name}-${it.repetitionIndex}: ${it.start.dayOfWeek} ${it.start.toLocalTime()}-${it.end.toLocalTime()}")
     }
+
+    println("Job ended at ${LocalTime.now()}")
+
 }
