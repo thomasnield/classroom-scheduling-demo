@@ -112,29 +112,41 @@ data class Session(val id: Int,
         occupationStates.forEach {
             f2.set(it.occupied, 1)
         }
-        // THIS IS CAUSING GLACIAL SLOWDOWN
-        // Why?
+
+        //ensure all occupied blocks are consecutive
+        // PROBLEM, not finding a solution and stalling
 
         /*
-        //ensure all occupied blocks are consecutive
-        val grouper = AtomicInteger(-1)
+        b1, b2, b3 .. bn = binary from each group
+
+        all binaries must sum to 1, indicating fully consecutive group exists
+        b1 + b2 + b3 + .. bn = 1
+         */
         val consecutiveStateConstraint = addExpression().level(1)
 
-        occupationStates.asSequence().groupBy { grouper.incrementAndGet() / blocksNeeded }
-                .values
-                .forEach { grp ->
-                    val slotForGroup = variable().binary()
+        (0..occupationStates.size).asSequence().map { i ->
+            occupationStates.subList(i, (i + blocksNeeded).let { if (it > occupationStates.size) occupationStates.size else it })
+        }.filter { it.size == blocksNeeded }
+        .forEach { grp ->
+            /*
+            b = 1,0 binary for group
+            n = blocks needed
+            x1, x2, x3 .. xn = occupation states in group
 
-                    consecutiveStateConstraint.set(slotForGroup, 1)
+            x1 + x2 + x3 .. + xn - bn >= 0
+             */
+            val binaryForGroup = variable().binary()
 
-                    addExpression().upper(0).apply {
-                        grp.forEach {
-                            set(it.occupied,1)
-                        }
-                        set(slotForGroup, -1 * blocksNeeded)
-                    }
+            consecutiveStateConstraint.set(binaryForGroup, 1)
+
+            addExpression().lower(0).apply {
+                grp.forEach {
+                    set(it.occupied,1)
                 }
-                */
+                set(binaryForGroup, -1 * blocksNeeded)
+            }
+        }
+
     }
 
     companion object {

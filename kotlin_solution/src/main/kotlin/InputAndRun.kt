@@ -25,6 +25,8 @@ val scheduledClasses = listOf(
 )
 
 fun main(args: Array<String>) {
+
+
     println("Job started at ${LocalTime.now()}")
 
     applyConstraints()
