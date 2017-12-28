@@ -113,7 +113,7 @@ data class Session(val id: Int,
             f2.set(it.occupied, 1)
         }
         // THIS IS CAUSING GLACIAL SLOWDOWN
-        // Is it even necessary?
+        // Why?
 
         /*
         //ensure all occupied blocks are consecutive
