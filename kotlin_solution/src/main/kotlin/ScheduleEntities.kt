@@ -112,8 +112,10 @@ data class Session(val id: Int,
         occupationStates.forEach {
             f2.set(it.occupied, 1)
         }
+        // THIS IS CAUSING GLACIAL SLOWDOWN
+        // Is it even necessary?
 
-
+        /*
         //ensure all occupied blocks are consecutive
         val grouper = AtomicInteger(-1)
         val consecutiveStateConstraint = addExpression().level(1)
@@ -132,6 +134,7 @@ data class Session(val id: Int,
                         set(slotForGroup, -1 * blocksNeeded)
                     }
                 }
+                */
     }
 
     companion object {
