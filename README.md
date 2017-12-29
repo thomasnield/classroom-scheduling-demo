@@ -25,7 +25,7 @@ Here is the starting data set:
 
 I set the model to put each recurring session 48 hours apart.
 
-**Availability for each day Monday-Friday: **
+**Availability for each day Monday-Friday:**
 
 * 8:00AM-11:30AM
 * 1:00PM-5:00PM
@@ -33,27 +33,6 @@ I set the model to put each recurring session 48 hours apart.
 
 Obviously, a room cannot be occupied by more than one class at any time. The solver does this successfully and prevents any overlap in scheduling. 
 
-
-## Program Output
-
-```
-Biology 101-1 MONDAY 13:00..14:00
-Sociology 101-1 MONDAY 14:00..15:00
-Linear Algebra I-1 MONDAY 15:00..17:00
-Psych 300-1 TUESDAY 10:00..13:00
-Math 300-1 TUESDAY 13:00..14:30
-English 101-1 TUESDAY 14:30..16:00
-Psych 101-1 TUESDAY 16:00..17:00
-Calculus I-1 TUESDAY 17:00..19:00
-Biology 101-2 WEDNESDAY 13:00..14:00
-Sociology 101-2 WEDNESDAY 14:00..15:00
-Linear Algebra I-2 WEDNESDAY 15:00..17:00
-Math 300-2 THURSDAY 13:00..14:30
-English 101-2 THURSDAY 14:30..16:00
-Psych 101-2 THURSDAY 16:00..17:00
-Calculus I-2 THURSDAY 17:00..19:00
-Linear Algebra I-3 FRIDAY 15:00..17:00
-```
 
 ## How to Execute
 
