@@ -1,7 +1,5 @@
 import java.time.DayOfWeek
 import java.time.LocalDateTime
-import java.util.concurrent.atomic.AtomicInteger
-
 
 
 data class Block(val dateTimeRange: ClosedRange<LocalDateTime>) {
@@ -21,8 +19,7 @@ data class Block(val dateTimeRange: ClosedRange<LocalDateTime>) {
         val all by lazy {
             generateSequence(operatingDates.start.atTime(operatingDay.start)) {
                 it.plusMinutes(15).takeIf { it.plusMinutes(15) <= operatingDates.endInclusive.atTime(operatingDay.endInclusive) }
-            }.filter { it.toLocalTime() in operatingDay }
-             .map { Block(it..it.plusMinutes(15)) }
+            }.map { Block(it..it.plusMinutes(15)) }
              .toList()
         }
     }
@@ -59,12 +56,6 @@ data class ScheduledClass(val id: Int,
                             f.set(it.occupied,1)
                         }
             }
-        }
-
-        //guide two repetitions to be 48 hours apart (in development)
-        if (repetitions == 2) {
-            val first = sessions.find { it.repetitionIndex == 1 }!!
-            val second = sessions.find { it.repetitionIndex == 2 }!!
         }
     }
 
@@ -112,41 +103,6 @@ data class Session(val id: Int,
         occupationStates.forEach {
             f2.set(it.occupied, 1)
         }
-
-        //ensure all occupied blocks are consecutive
-        // PROBLEM, not finding a solution and stalling
-
-        /*
-        b1, b2, b3 .. bn = binary from each group
-
-        all binaries must sum to 1, indicating fully consecutive group exists
-        b1 + b2 + b3 + .. bn = 1
-         */
-        val consecutiveStateConstraint = addExpression().level(1)
-
-        (0..occupationStates.size).asSequence().map { i ->
-            occupationStates.subList(i, (i + blocksNeeded).let { if (it > occupationStates.size) occupationStates.size else it })
-        }.filter { it.size == blocksNeeded }
-        .forEach { grp ->
-            /*
-            b = 1,0 binary for group
-            n = blocks needed
-            x1, x2, x3 .. xn = occupation states in group
-
-            x1 + x2 + x3 .. + xn - bn >= 0
-             */
-            val binaryForGroup = variable().binary()
-
-            consecutiveStateConstraint.set(binaryForGroup, 1)
-
-            addExpression().lower(0).apply {
-                grp.forEach {
-                    set(it.occupied,1)
-                }
-                set(binaryForGroup, -1 * blocksNeeded)
-            }
-        }
-
     }
 
     companion object {
