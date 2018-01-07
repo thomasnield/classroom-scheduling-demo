@@ -1,24 +1,36 @@
-import java.time.DayOfWeek
+import org.ojalgo.optimisation.ExpressionsBasedModel
+import org.ojalgo.optimisation.Variable
 import java.time.LocalDateTime
+import java.util.concurrent.atomic.AtomicInteger
+
+// declare model
+val model = ExpressionsBasedModel()
+
+val funcId = AtomicInteger(0)
+val variableId = AtomicInteger(0)
+fun variable() = Variable(variableId.incrementAndGet().toString().let { "Variable$it" }).apply(model::addVariable)
+fun addExpression() = funcId.incrementAndGet().let { "Func$it"}.let { model.addExpression(it) }
+
+
+
 
 
 data class Block(val dateTimeRange: ClosedRange<LocalDateTime>) {
 
     val timeRange = dateTimeRange.let { it.start.toLocalTime()..it.endInclusive.toLocalTime() }
 
-    fun addConstraints() {
-        val f = addExpression().upper(1)
+    val cumulativeState = variable().lower(0).upper(1)
 
-        OccupationState.all.filter { it.block == this }.forEach {
-            f.set(it.occupied, 1)
-        }
+    val slots by lazy {
+        Slot.all.filter { it.block == this }
     }
+
     companion object {
 
         // Operating blocks
         val all by lazy {
-            generateSequence(operatingDates.start.atTime(operatingDay.start)) {
-                it.plusMinutes(15).takeIf { it.plusMinutes(15) <= operatingDates.endInclusive.atTime(operatingDay.endInclusive) }
+            generateSequence(operatingDates.start.atStartOfDay()) {
+                it.plusMinutes(15).takeIf { it.plusMinutes(15) <= operatingDates.endInclusive.atTime(23,59) }
             }.map { Block(it..it.plusMinutes(15)) }
              .toList()
         }
@@ -29,34 +41,11 @@ data class Block(val dateTimeRange: ClosedRange<LocalDateTime>) {
 data class ScheduledClass(val id: Int,
                           val name: String,
                           val hoursLength: Double,
-                          val repetitions: Int) {
+                          val repetitions: Int,
+                          val repetitionGap: Int = 48 * 4) {
 
     val sessions by lazy {
         Session.all.filter { it.parentClass == this }
-    }
-
-    fun addConstraints() {
-
-        //guide 3 repetitions to be fixed on MONDAY, WEDNESDAY, FRIDAY
-        if (repetitions == 3) {
-            sessions.forEach { session ->
-                val f = addExpression().level(session.blocksNeeded)
-
-                session.occupationStates.asSequence()
-                        .filter {
-                            it.block.dateTimeRange.start.dayOfWeek ==
-                                    when(session.repetitionIndex) {
-                                        1 -> DayOfWeek.MONDAY
-                                        2 -> DayOfWeek.WEDNESDAY
-                                        3 -> DayOfWeek.FRIDAY
-                                        else -> throw Exception("Must be 1/2/3")
-                                    }
-                        }
-                        .forEach {
-                            f.set(it.occupied,1)
-                        }
-            }
-        }
     }
 
     companion object {
@@ -71,58 +60,67 @@ data class Session(val id: Int,
                    val repetitionIndex: Int,
                    val parentClass: ScheduledClass) {
 
-    val blocksNeeded = (hoursLength * 4).toInt()
+    val slotsNeeded = (hoursLength * 4).toInt()
 
-    val occupationStates by lazy {
-        OccupationState.all.asSequence().filter { it.session == this }.toList()
+    val slots by lazy {
+        Slot.all.asSequence().filter { it.session == this }.toList()
     }
 
-    val start get() = occupationStates.asSequence().filter { it.occupied.value.toInt() == 1 }
-            .map { it.block.dateTimeRange.start }
-            .min()!!
-
-    val end get() = occupationStates.asSequence().filter { it.occupied.value.toInt() == 1 }
-            .map { it.block.dateTimeRange.endInclusive }
-            .max()!!
+    val start get() = slots.asSequence().first { it.occupied.value.toInt() == 1 }.block.dateTimeRange.start
+    val end get() = start.plusMinutes((hoursLength * 60.0).toLong())
 
     fun addConstraints() {
 
-        val f1 = addExpression().level(0)
         //block out exceptions
-        occupationStates.asSequence()
-                .filter { os -> breaks.any { os.block.timeRange.start in it } || os.block.timeRange.start !in operatingDay }
-                .forEach {
-                    // b = 0, where b is occupation state
-                    // this means it should never be occupied
-                    f1.set(it.occupied, 1)
-                }
-
-        //sum of all boolean states for this session must equal the # blocks needed
-        val f2 = addExpression().level(blocksNeeded)
-
-        occupationStates.forEach {
-            f2.set(it.occupied, 1)
+        addExpression().level(0).apply {
+            slots.asSequence()
+                    .filter { os -> breaks.any { os.block.timeRange.start in it } || os.block.timeRange.start !in operatingDay }
+                    .forEach {
+                        // b = 0, where b is occupation state of slot
+                        // this means it should never be occupied
+                        set(it.occupied, 1)
+                    }
         }
+
+        //sum of all boolean states for this session must be 1
+        addExpression().level(1).apply {
+            slots.forEach {
+                set(it.occupied, 1)
+            }
+        }
+
+        //handle contiguous states
+        slots.rollingRecurrences(slotsNeeded = slotsNeeded, gapSize = parentClass.repetitionGap, recurrencesNeeded = parentClass.repetitions)
+                .forEach { batch ->
+                    val flattenedBatch = batch.flatMap { it }
+                    val first = flattenedBatch.first()
+
+                    addExpression().upper(0).apply {
+                        flattenedBatch.asSequence().flatMap { it.block.slots.asSequence() }
+                                .forEach {
+                                    set(it.occupied, 1)
+                                }
+
+                        set(first.block.cumulativeState, -1)
+                    }
+                }
     }
 
     companion object {
         val all by lazy {
-            ScheduledClass.all.asSequence().flatMap { sc ->
-                (1..sc.repetitions).asSequence()
-                        .map { Session(sc.id, sc.name, sc.hoursLength, it, sc) }
-            }.toList()
+            ScheduledClass.all.map { Session(it.id, it.name, it.hoursLength, 1, it) }
         }
     }
 }
 
-data class OccupationState(val block: Block, val session: Session) {
+data class Slot(val block: Block, val session: Session) {
     val occupied = variable().binary()
 
     companion object {
 
         val all by lazy {
             Block.all.asSequence().flatMap { b ->
-                Session.all.asSequence().map { OccupationState(b,it) }
+                Session.all.asSequence().map { Slot(b,it) }
             }.toList()
         }
     }
@@ -131,6 +129,18 @@ data class OccupationState(val block: Block, val session: Session) {
 
 fun applyConstraints() {
     Session.all.forEach { it.addConstraints() }
-    ScheduledClass.all.forEach { it.addConstraints() }
-    Block.all.forEach { it.addConstraints() }
 }
+
+fun <T> List<T>.rollingBatches(batchSize: Int) = (0..size).asSequence().map { i ->
+    subList(i, (i + batchSize).let { if (it > size) size else it })
+}.filter { it.size == batchSize }
+
+fun <T> List<T>.rollingRecurrences(slotsNeeded: Int, gapSize: Int, recurrencesNeeded: Int) =
+        (0..size).asSequence().map { i ->
+            (1..recurrencesNeeded).asSequence().map { (it - 1) * gapSize  }
+                    .filter { it + i < size}
+                    .map { r ->
+                        subList(i + r, (i + r + slotsNeeded).let { if (it > size) size else it })
+                    }.filter { it.size == slotsNeeded }
+                    .toList()
+        }.filter { it.size == recurrencesNeeded }
