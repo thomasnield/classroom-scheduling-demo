@@ -1,5 +1,6 @@
 import org.ojalgo.optimisation.ExpressionsBasedModel
 import org.ojalgo.optimisation.Variable
+import java.time.DayOfWeek
 import java.time.LocalDateTime
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -60,18 +61,41 @@ data class ScheduledClass(val id: Int,
     fun addConstraints() {
 
         //block out exceptions
-        slots.asSequence()
-                .filter { os -> breaks.any { os.block.timeRange.start in it } || os.block.timeRange.start !in operatingDay }
-                .forEach {
-                    // b = 0, where b is occupation state of slot
-                    // this means it should never be occupied
-                    it.occupied.lower(0).upper(0)
-                }
+
+        addExpression().level(0).apply {
+            slots.asSequence()
+                    .filter { os -> breaks.any { os.block.timeRange.start in it } || os.block.timeRange.start !in operatingDay }
+                    .forEach {
+                        // b = 0, where b is occupation state of slot
+                        // this means it should never be occupied
+                        set(it.occupied,1)
+                    }
+        }
+
 
         //sum of all boolean states for this session must be 1
         addExpression().level(1).apply {
             slots.forEach {
                 set(it.occupied, 1)
+            }
+        }
+
+        //guide Mon/Wed/Fri for three repetitions
+        if (repetitions == 3) {
+            addExpression().level(1).apply {
+                slots.filter { it.block.dateTimeRange.start.dayOfWeek == DayOfWeek.MONDAY }
+                        .forEach {
+                            set(it.occupied, 1)
+                        }
+            }
+        }
+
+        //guide two repetitions to start on Mon, Tues, or Wed
+        if (repetitions == 2) {
+            addExpression().level(1).apply {
+                slots.filter { it.block.dateTimeRange.start.dayOfWeek in DayOfWeek.MONDAY..DayOfWeek.WEDNESDAY }.forEach {
+                    set(it.occupied, 1)
+                }
             }
         }
 
@@ -90,11 +114,6 @@ data class ScheduledClass(val id: Int,
                         set(first.block.cumulativeState, -1)
                     }
                 }
-
-        //prevent scheduling past end of window
-        slots.takeLast((repetitionGapSlots * (repetitions - 1)).let { if (it > 0) it - 1 else it }).forEach {
-            it.occupied.lower(0).upper(0)
-        }
     }
 
     companion object {
