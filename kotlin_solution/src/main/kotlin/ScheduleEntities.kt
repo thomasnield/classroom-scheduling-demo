@@ -20,7 +20,10 @@ data class Block(val dateTimeRange: ClosedRange<LocalDateTime>) {
 
     val timeRange = dateTimeRange.let { it.start.toLocalTime()..it.endInclusive.toLocalTime() }
 
-    val cumulativeState = variable().lower(0).upper(1)
+    val available get() =  (breaks.all { timeRange.start !in it } && timeRange.start in operatingDay)
+
+    val cumulativeState = variable().apply { if (available) lower(0).upper(1) else level(0) }
+
 
     val slots by lazy {
         Slot.all.filter { it.block == this }
@@ -34,6 +37,11 @@ data class Block(val dateTimeRange: ClosedRange<LocalDateTime>) {
                 it.plusMinutes(15).takeIf { it.plusMinutes(15) <= operatingDates.endInclusive.atTime(23,59) }
             }.map { Block(it..it.plusMinutes(15)) }
              .toList()
+        }
+
+        fun applyConstraints() {
+
+
         }
     }
 }
@@ -59,19 +67,6 @@ data class ScheduledClass(val id: Int,
     val daysOfWeek get() = (0..(repetitions-1)).asSequence().map { start.dayOfWeek.plus(it.toLong() * repetitionGapDays) }.sorted()
 
     fun addConstraints() {
-
-        //block out exceptions
-
-        addExpression().level(0).apply {
-            slots.asSequence()
-                    .filter { os -> breaks.any { os.block.timeRange.start in it } || os.block.timeRange.start !in operatingDay }
-                    .forEach {
-                        // b = 0, where b is occupation state of slot
-                        // this means it should never be occupied
-                        set(it.occupied,1)
-                    }
-        }
-
 
         //sum of all boolean states for this session must be 1
         addExpression().level(1).apply {
@@ -124,7 +119,7 @@ data class ScheduledClass(val id: Int,
 
 
 data class Slot(val block: Block, val session: ScheduledClass) {
-    val occupied = variable().binary()
+    val occupied = variable().apply { if (block.available) binary() else level(0) }
 
     companion object {
 
@@ -138,6 +133,7 @@ data class Slot(val block: Block, val session: ScheduledClass) {
 
 
 fun applyConstraints() {
+    Block.applyConstraints()
     ScheduledClass.all.forEach { it.addConstraints() }
 }
 
