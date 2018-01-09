@@ -14,19 +14,26 @@ fun addExpression() = funcId.incrementAndGet().let { "Func$it"}.let { model.addE
 
 
 
-
-
 data class Block(val dateTimeRange: ClosedRange<LocalDateTime>) {
 
     val timeRange = dateTimeRange.let { it.start.toLocalTime()..it.endInclusive.toLocalTime() }
 
     val available get() =  (breaks.all { timeRange.start !in it } && timeRange.start in operatingDay)
 
-    val cumulativeState = variable().apply { if (available) lower(0).upper(1) else level(0) }
-
+    //val cumulativeState = variable().apply { if (available) lower(0).upper(1) else level(0) }
 
     val slots by lazy {
         Slot.all.filter { it.block == this }
+    }
+
+    fun addConstraints() {
+        addExpression().lower(0).upper(1).apply {
+            ScheduledClass.all.asSequence().flatMap { it.anchorOverlapFor(this@Block) }
+                    .forEach {
+                        set(it.occupied, 1)
+                    }
+
+        }
     }
 
     companion object {
@@ -40,8 +47,7 @@ data class Block(val dateTimeRange: ClosedRange<LocalDateTime>) {
         }
 
         fun applyConstraints() {
-
-
+            all.forEach { it.addConstraints() }
         }
     }
 }
@@ -60,6 +66,14 @@ data class ScheduledClass(val id: Int,
     val slots by lazy {
         Slot.all.asSequence().filter { it.session == this }.toList()
     }
+
+    val batches by lazy {
+        slots.rollingRecurrences(slotsNeeded = slotsNeeded, gapSize = repetitionGapSlots, recurrencesNeeded = repetitions)
+    }
+
+    fun anchorOverlapFor(block: Block) = batches.asSequence()
+            .filter { it.flatMap { it }.any { it.block == block } }
+            .map { it.first().first() }
 
     val start get() = slots.asSequence().first { it.occupied.value.toInt() == 1 }.block.dateTimeRange.start
     val end get() = start.plusMinutes((hoursLength * 60.0).toLong())
@@ -93,22 +107,6 @@ data class ScheduledClass(val id: Int,
                 }
             }
         }
-
-        //handle contiguous states
-        slots.rollingRecurrences(slotsNeeded = slotsNeeded, gapSize = repetitionGapSlots, recurrencesNeeded = repetitions)
-                .forEach { batch ->
-                    val flattenedBatch = batch.flatMap { it }
-                    val first = flattenedBatch.first()
-
-                    addExpression().upper(0).apply {
-                        flattenedBatch.asSequence().flatMap { it.block.slots.asSequence() }
-                                .forEach {
-                                    set(it.occupied, 1)
-                                }
-
-                        set(first.block.cumulativeState, -1)
-                    }
-                }
     }
 
     companion object {
