@@ -27,12 +27,22 @@ data class Block(val dateTimeRange: ClosedRange<LocalDateTime>) {
     }
 
     fun addConstraints() {
-        addExpression().lower(0).upper(1).apply {
-            ScheduledClass.all.asSequence().flatMap { it.anchorOverlapFor(this@Block) }
-                    .forEach {
-                        set(it.occupied, 1)
-                    }
-
+        if (available) {
+            addExpression().lower(0).upper(1).apply {
+                ScheduledClass.all.asSequence().flatMap { it.anchorOverlapFor(this@Block) }
+                        .filter { it.block.available }
+                        .forEach {
+                            set(it.occupied, 1)
+                        }
+            }
+        } else {
+            addExpression().level(0).apply {
+                ScheduledClass.all.asSequence().flatMap { it.anchorOverlapFor(this@Block) }
+                        .filter { it.block.available }
+                        .forEach {
+                            set(it.occupied, 1)
+                        }
+            }
         }
     }
 
@@ -75,7 +85,7 @@ data class ScheduledClass(val id: Int,
             .filter { it.flatMap { it }.any { it.block == block } }
             .map { it.first().first() }
 
-    val start get() = slots.asSequence().first { it.occupied.value.toInt() == 1 }.block.dateTimeRange.start
+    val start get() = slots.asSequence().filter { it.occupied.value.toInt() == 1 }.map { it.block.dateTimeRange.start }.min()!!
     val end get() = start.plusMinutes((hoursLength * 60.0).toLong())
 
     val daysOfWeek get() = (0..(repetitions-1)).asSequence().map { start.dayOfWeek.plus(it.toLong() * repetitionGapDays) }.sorted()
