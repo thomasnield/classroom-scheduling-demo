@@ -52,7 +52,7 @@ Obviously, a room cannot be occupied by more than one class at any time. The sol
 
 Build the Kotlin project with Gradle, then run the `main()` function inside the `InputAndRun.kt` file. You can also change the hardcoded inputs in that file too.
 
-This can take a few minutes to run depending on your machine's computing power. My Surface Pro ran hot executing the solver. I learned I could put a few functions in the model to gently guide it away from unncessary territory. For instance, classes with 3 repetitions a week need to have the first session on Monday. There's no reason to have it explore any other permutations later in the week. 
+This can take 30-60 seconds to run depending on your machine's computing power. I learned I could put a few functions in the model to gently guide it away from unncessary territory. For instance, classes with 3 repetitions a week need to have the first session on Monday. There's no reason to have it explore any other permutations later in the week. 
 
 ## Observations
 
