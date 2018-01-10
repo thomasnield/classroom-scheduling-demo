@@ -20,8 +20,6 @@ data class Block(val dateTimeRange: ClosedRange<LocalDateTime>) {
 
     val available get() =  (breaks.all { timeRange.start !in it } && timeRange.start in operatingDay)
 
-    //val cumulativeState = variable().apply { if (available) lower(0).upper(1) else level(0) }
-
     val slots by lazy {
         Slot.all.filter { it.block == this }
     }
