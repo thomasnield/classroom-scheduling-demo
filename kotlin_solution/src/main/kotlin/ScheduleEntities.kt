@@ -36,13 +36,10 @@ data class Block(val dateTimeRange: ClosedRange<LocalDateTime>) {
                         }
             }
         } else {
-            addExpression().level(0).apply {
-                ScheduledClass.all.asSequence().flatMap { it.anchorOverlapFor(this@Block) }
-                        .filter { it.block.available }
-                        .forEach {
-                            set(it.occupied, 1)
-                        }
-            }
+            ScheduledClass.all.asSequence().flatMap { it.anchorOverlapFor(this@Block) }
+                    .forEach {
+                        it.occupied.level(0)
+                    }
         }
     }
 
