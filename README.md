@@ -1,7 +1,7 @@
 # Schedule Generator Demo
 ### Using Linear Optimization
 
-This is an exercise at creating a class schedule generator using [linear/integer optimization](https://en.wikipedia.org/wiki/Linear_programming), although I'm looking to still add a few refinements.
+This was an exercise at creating a class schedule generator using [linear/integer optimization](https://en.wikipedia.org/wiki/Linear_programming). I finally got it working :D
 
 I used [Kotlin](http://kotlinlang.org/) with [ojAlgo](http://www.ojalgo.org/), which turned out to be an effective stack.
 
@@ -28,8 +28,22 @@ I set the model to put each recurring session 48 hours apart.
 **Availability for each day Monday-Friday:**
 
 * 8:00AM-11:30AM
-* 1:00PM-5:00PM
+* 1:00PM-7:00PM
 
+** OUTPUT:**
+
+```
+Psych 101- WEDNESDAY/FRIDAY 18:15-19:15
+English 101- MONDAY/WEDNESDAY/FRIDAY 13:15-14:45
+Math 300- TUESDAY/THURSDAY 17:45-19:15
+Psych 300- THURSDAY 08:00-11:00
+Calculus I- WEDNESDAY/FRIDAY 07:30-09:30
+Linear Algebra I- MONDAY/WEDNESDAY/FRIDAY 15:45-17:45
+Sociology 101- WEDNESDAY/FRIDAY 14:45-15:45
+Biology 101- TUESDAY/THURSDAY 13:30-14:30
+```
+
+![](https://i.imgur.com/9HHyCnj.png)
 
 Obviously, a room cannot be occupied by more than one class at any time. The solver does this successfully and prevents any overlap in scheduling. 
 
@@ -54,13 +68,11 @@ It was satisfying that Kotlin allowed me to create something procedural and hack
 
 * [x] Optimize non-overlap binary constraints for discrete values, not linear
 
-* [ ] Space out recurring classes by one day
+* [x] Space out recurring classes by one day
 
-* [ ] Find performance bottlenecks
+* [x] Find performance bottlenecks
 
 * [x] Constrain scheduling to only available times above
-
-* [ ] Put 15 minute gaps between each class
 
 * [ ] Wrap TornadoFX user interface around model
 
