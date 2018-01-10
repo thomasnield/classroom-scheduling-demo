@@ -5,7 +5,7 @@ import java.time.LocalTime
 
 // Any Monday through Friday date range will work
 val operatingDates = LocalDate.of(2017,10,16)..LocalDate.of(2017,10,20)
-val operatingDay = LocalTime.of(7,0)..LocalTime.of(17,0)
+val operatingDay = LocalTime.of(8,0)..LocalTime.of(17,0)
 
 
 val breaks = listOf<ClosedRange<LocalTime>>(
@@ -34,7 +34,7 @@ fun main(args: Array<String>) {
     model.countVariables().run { println("$this variables") }
 
     model.options.apply {
-        debug(IntegerSolver::class.java)
+        //debug(IntegerSolver::class.java)
         iterations_suffice = 0
     }
 

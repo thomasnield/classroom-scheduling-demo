@@ -28,22 +28,22 @@ I set the model to put each recurring session 48 hours apart.
 **Availability for each day Monday-Friday:**
 
 * 8:00AM-11:30AM
-* 1:00PM-7:00PM
+* 1:00PM-5:00PM
 
 **OUTPUT:**
 
 ```
-Psych 101- TUESDAY/THURSDAY 07:30-08:30
+Psych 101- WEDNESDAY/FRIDAY 16:15-17:15
 English 101- MONDAY/WEDNESDAY/FRIDAY 10:00-11:30
-Math 300- TUESDAY/THURSDAY 13:30-15:00
-Psych 300- THURSDAY 08:30-11:30
-Calculus I- WEDNESDAY/FRIDAY 15:00-17:00
-Linear Algebra I- MONDAY/WEDNESDAY/FRIDAY 07:00-09:00
-Sociology 101- WEDNESDAY/FRIDAY 13:45-14:45
-Biology 101- WEDNESDAY/FRIDAY 09:00-10:00
+Math 300- TUESDAY/THURSDAY 10:00-11:30
+Psych 300- THURSDAY 14:15-17:15
+Calculus I- TUESDAY/THURSDAY 08:00-10:00
+Linear Algebra I- MONDAY/WEDNESDAY/FRIDAY 13:15-15:15
+Sociology 101- MONDAY/WEDNESDAY 15:15-16:15
+Biology 101- WEDNESDAY/FRIDAY 08:45-09:45
 ```
 
-![](https://i.imgur.com/8jNw5QJ.png)
+![](https://i.imgur.com/2sr4oLF.jpg)
 
 Obviously, a room cannot be occupied by more than one class at any time. The solver does this successfully and prevents any overlap in scheduling. 
 
@@ -73,6 +73,8 @@ It was satisfying that Kotlin allowed me to create something procedural and hack
 * [x] Find performance bottlenecks
 
 * [x] Constrain scheduling to only available times above
+
+* [ ] Investigate 15 minute spills past boundaries
 
 * [ ] Wrap TornadoFX user interface around model
 
