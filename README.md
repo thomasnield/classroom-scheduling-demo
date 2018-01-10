@@ -30,7 +30,7 @@ I set the model to put each recurring session 48 hours apart.
 * 8:00AM-11:30AM
 * 1:00PM-7:00PM
 
-** OUTPUT:**
+**OUTPUT:**
 
 ```
 Psych 101- WEDNESDAY/FRIDAY 18:15-19:15
