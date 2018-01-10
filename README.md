@@ -43,7 +43,7 @@ Sociology 101- MONDAY/WEDNESDAY 15:15-16:15
 Biology 101- WEDNESDAY/FRIDAY 08:45-09:45
 ```
 
-![](https://i.imgur.com/2sr4oLF.jpg)
+![](https://i.imgur.com/uekAZBG.png)
 
 Obviously, a room cannot be occupied by more than one class at any time. The solver does this successfully and prevents any overlap in scheduling. 
 
