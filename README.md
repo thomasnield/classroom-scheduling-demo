@@ -33,17 +33,17 @@ I set the model to put each recurring session 48 hours apart.
 **OUTPUT:**
 
 ```
-Psych 101- WEDNESDAY/FRIDAY 18:15-19:15
-English 101- MONDAY/WEDNESDAY/FRIDAY 13:15-14:45
-Math 300- TUESDAY/THURSDAY 17:45-19:15
-Psych 300- THURSDAY 08:00-11:00
-Calculus I- WEDNESDAY/FRIDAY 07:30-09:30
-Linear Algebra I- MONDAY/WEDNESDAY/FRIDAY 15:45-17:45
-Sociology 101- WEDNESDAY/FRIDAY 14:45-15:45
-Biology 101- TUESDAY/THURSDAY 13:30-14:30
+Psych 101- TUESDAY/THURSDAY 07:30-08:30
+English 101- MONDAY/WEDNESDAY/FRIDAY 10:00-11:30
+Math 300- TUESDAY/THURSDAY 13:30-15:00
+Psych 300- THURSDAY 08:30-11:30
+Calculus I- WEDNESDAY/FRIDAY 15:00-17:00
+Linear Algebra I- MONDAY/WEDNESDAY/FRIDAY 07:00-09:00
+Sociology 101- WEDNESDAY/FRIDAY 13:45-14:45
+Biology 101- WEDNESDAY/FRIDAY 09:00-10:00
 ```
 
-![](https://i.imgur.com/9HHyCnj.png)
+![](https://i.imgur.com/8jNw5QJ.png)
 
 Obviously, a room cannot be occupied by more than one class at any time. The solver does this successfully and prevents any overlap in scheduling. 
 
