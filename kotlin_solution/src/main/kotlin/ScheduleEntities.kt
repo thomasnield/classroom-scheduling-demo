@@ -73,7 +73,7 @@ data class ScheduledClass(val id: Int,
     }
 
     val batches by lazy {
-        slots.rollingRecurrences(slotsNeeded = slotsNeeded, gapSize = repetitionGapSlots, recurrencesNeeded = repetitions)
+        slots.rollingRecurrences(slotsNeeded = slotsNeeded, gap = repetitionGapSlots, recurrences = repetitions)
     }
 
     fun anchorOverlapFor(block: Block) = batches.asSequence()
@@ -144,12 +144,12 @@ fun <T> List<T>.rollingBatches(batchSize: Int) = (0..size).asSequence().map { i 
     subList(i, (i + batchSize).let { if (it > size) size else it })
 }.filter { it.size == batchSize }
 
-fun <T> List<T>.rollingRecurrences(slotsNeeded: Int, gapSize: Int, recurrencesNeeded: Int) =
+fun <T> List<T>.rollingRecurrences(slotsNeeded: Int, gap: Int, recurrences: Int) =
         (0..size).asSequence().map { i ->
-            (1..recurrencesNeeded).asSequence().map { (it - 1) * gapSize  }
+            (1..recurrences).asSequence().map { (it - 1) * gap }
                     .filter { it + i < size}
                     .map { r ->
                         subList(i + r, (i + r + slotsNeeded).let { if (it > size) size else it })
                     }.filter { it.size == slotsNeeded }
                     .toList()
-        }.filter { it.size == recurrencesNeeded }
+        }.filter { it.size == recurrences }
