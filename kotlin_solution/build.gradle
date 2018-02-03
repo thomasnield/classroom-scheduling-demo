@@ -2,7 +2,7 @@ group 'org.nield'
 version '1.0-SNAPSHOT'
 
 buildscript {
-    ext.kotlin_version = '1.2.10'
+    ext.kotlin_version = '1.2.20'
 
     repositories {
         mavenCentral()
@@ -20,8 +20,8 @@ repositories {
 
 dependencies {
     compile 'org.ojalgo:ojalgo:44.0.0'
-    compile 'org.ojalgo:ojalgo-extensions:1.0.0'
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
+    compile files("lib/okAlgo.jar")
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 }
 
 compileKotlin {
