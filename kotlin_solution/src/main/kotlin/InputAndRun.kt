@@ -1,4 +1,3 @@
-import org.ojalgo.optimisation.integer.IntegerSolver
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -34,7 +33,6 @@ fun main(args: Array<String>) {
     model.countVariables().run { println("$this variables") }
 
     model.options.apply {
-        //debug(IntegerSolver::class.java)
         iterations_suffice = 0
     }
 

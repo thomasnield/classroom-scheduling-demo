@@ -20,7 +20,6 @@ repositories {
 
 dependencies {
     compile 'org.ojalgo:ojalgo:44.0.0'
-    compile files("lib/okAlgo.jar")
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 }
 
