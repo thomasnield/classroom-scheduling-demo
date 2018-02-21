@@ -7,34 +7,35 @@ import java.util.concurrent.atomic.AtomicInteger
 // declare model
 val model = ExpressionsBasedModel()
 
+
+// improvised DSL
 val funcId = AtomicInteger(0)
 val variableId = AtomicInteger(0)
 fun variable() = Variable(variableId.incrementAndGet().toString().let { "Variable$it" }).apply(model::addVariable)
 fun addExpression() = funcId.incrementAndGet().let { "Func$it"}.let { model.addExpression(it) }
 
 
-
+/** A discrete, 15-minute chunk of time a class can be scheduled on */
 data class Block(val dateTimeRange: ClosedRange<LocalDateTime>) {
 
     val timeRange = dateTimeRange.let { it.start.toLocalTime()..it.endInclusive.toLocalTime() }
 
-    val available get() =  (breaks.all { timeRange.start !in it } && timeRange.start in operatingDay)
-
-    val slots by lazy {
-        Slot.all.filter { it.block == this }
-    }
+    /** indicates if this block is zeroed due to operating day/break constraints */
+    val withinOperatingDay get() =  breaks.all { timeRange.start !in it } &&
+            timeRange.start in operatingDay &&
+            timeRange.endInclusive in operatingDay
 
     fun addConstraints() {
-        if (available) {
+        if (withinOperatingDay) {
             addExpression().lower(0).upper(1).apply {
-                ScheduledClass.all.asSequence().flatMap { it.anchorOverlapFor(this@Block) }
-                        .filter { it.block.available }
+                ScheduledClass.all.asSequence().flatMap { it.affectingSlotsFor(this@Block) }
+                        .filter { it.block.withinOperatingDay }
                         .forEach {
                             set(it.occupied, 1)
                         }
             }
         } else {
-            ScheduledClass.all.asSequence().flatMap { it.anchorOverlapFor(this@Block) }
+            ScheduledClass.all.asSequence().flatMap { it.affectingSlotsFor(this@Block) }
                     .forEach {
                         it.occupied.level(0)
                     }
@@ -43,7 +44,7 @@ data class Block(val dateTimeRange: ClosedRange<LocalDateTime>) {
 
     companion object {
 
-        // Operating blocks
+        /* All operating blocks for the entire week, broken up in 15 minute increments */
         val all by lazy {
             generateSequence(operatingDates.start.atStartOfDay()) {
                 it.plusMinutes(15).takeIf { it.plusMinutes(15) <= operatingDates.endInclusive.atTime(23,59) }
@@ -64,30 +65,40 @@ data class ScheduledClass(val id: Int,
                           val repetitions: Int,
                           val repetitionGapDays: Int = 2) {
 
-    val repetitionGapSlots = repetitionGapDays * 24 * 4
+    /** the # of slots between each recurrence */
+    val gapLengthInSlots = repetitionGapDays * 24 * 4
 
+    /** the # of slots needed for a given occurrence */
     val slotsNeeded = (hoursLength * 4).toInt()
 
+    /** yields slots for this given scheduled class */
     val slots by lazy {
-        Slot.all.asSequence().filter { it.session == this }.toList()
+        Slot.all.asSequence().filter { it.scheduledClass == this }.toList()
     }
 
-    val batches by lazy {
-        slots.rollingRecurrences(slotsNeeded = slotsNeeded, gap = repetitionGapSlots, recurrences = repetitions)
+    /** yields slot groups for this scheduled class */
+    val slotGroups by lazy {
+        slots.rollingRecurrences(slotsNeeded = slotsNeeded, gap = gapLengthInSlots, recurrences = repetitions)
     }
 
-    fun anchorOverlapFor(block: Block) = batches.asSequence()
+    /** yields slots that affect the given block for this scheduled class */
+    fun affectingSlotsFor(block: Block) = slotGroups.asSequence()
             .filter { it.flatMap { it }.any { it.block == block } }
             .map { it.first().first() }
 
+    /** translates and returns the optimized start time of the class */
     val start get() = slots.asSequence().filter { it.occupied.value.toInt() == 1 }.map { it.block.dateTimeRange.start }.min()!!
+
+    /** translates and returns the optimized end time of the class */
     val end get() = start.plusMinutes((hoursLength * 60.0).toLong())
 
+    /** returns the DayOfWeeks where recurrences take place */
     val daysOfWeek get() = (0..(repetitions-1)).asSequence().map { start.dayOfWeek.plus(it.toLong() * repetitionGapDays) }.sorted()
 
     fun addConstraints() {
 
-        //sum of all boolean states for this session must be 1
+        //sum of all slots for this scheduledClass must be 1
+        // s1 + s2 + s3 .. + sn = 1
         addExpression().level(1).apply {
             slots.forEach {
                 set(it.occupied, 1)
@@ -121,8 +132,8 @@ data class ScheduledClass(val id: Int,
 
 
 
-data class Slot(val block: Block, val session: ScheduledClass) {
-    val occupied = variable().apply { if (block.available) binary() else level(0) }
+data class Slot(val block: Block, val scheduledClass: ScheduledClass) {
+    val occupied = variable().apply { if (block.withinOperatingDay) binary() else level(0) }
 
     companion object {
 
