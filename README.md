@@ -1,6 +1,8 @@
 # Schedule Generator Demo
 ### Using Linear/Integer Optimization
 
+Companion blog article can be [found here](http://tomstechnicalblog.blogspot.com/2018/02/linear-programming-with-kotlin-part-iii.html).
+
 This was an exercise at creating a class schedule generator using [linear/integer optimization](https://en.wikipedia.org/wiki/Linear_programming). I finally got it working and I will blog about it later.
 
 I used [Kotlin](http://kotlinlang.org/) with [ojAlgo](http://www.ojalgo.org/), which turned out to be an effective stack.
