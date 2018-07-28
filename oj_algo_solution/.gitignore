@@ -1,0 +1,6 @@
+
+/build/
+/.idea/
+/out/
+/kotlin_solution.iml
+/.gradle/

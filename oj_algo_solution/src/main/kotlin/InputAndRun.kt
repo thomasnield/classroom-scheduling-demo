@@ -33,7 +33,7 @@ fun main(args: Array<String>) {
     model.countVariables().run { println("$this variables") }
 
     model.options.apply {
-        iterations_suffice = 0
+        iterations_suffice = 1
     }
 
     println(model.minimise())
