@@ -45,12 +45,12 @@ data class ScheduledClass(val id: Int,
     }
 
     /** yields slot groups for this scheduled class */
-    val slotGroups by lazy {
+    val recurrenceSlots by lazy {
         slots.rollingRecurrences(slotsNeeded = slotsNeeded, gap = gap, recurrences = recurrences)
     }
 
     /** yields slots that affect the given block for this scheduled class */
-    fun affectingSlotsFor(block: Block) = slotGroups.asSequence()
+    fun affectingSlotsFor(block: Block) = recurrenceSlots.asSequence()
             .filter { it.flatMap { it }.any { it.block == block } }
             .map { it.first().first() }
 
@@ -64,12 +64,12 @@ data class ScheduledClass(val id: Int,
                 // operating day blackouts
                 .plus(slots.asSequence().filter { !it.block.withinOperatingDay })
                 // affected slots that occupy blackouts
-                .plus(
-                        slotGroups.asSequence()
+/*                .plus(
+                        recurrenceSlots.asSequence()
                                 .filter { it.any { it.any { !it.block.withinOperatingDay }} }
                                 .flatMap { it.asSequence() }
                                 .flatMap { it.asSequence() }
-                )
+                )*/
                 .distinct()
                 .onEach { it.selected = 0 }
                 .toList()

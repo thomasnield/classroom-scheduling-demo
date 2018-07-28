@@ -40,6 +40,10 @@ fun executeBranchAndBound() {
     // pre-constraints
     ScheduledClass.all.flatMap { it.slotsFixedToZero }.forEach { it.selected = 0 }
 
+    println("SLOT COUNT: ${Slot.all.count()}")
+    println("ZERO SLOT COUNT: ${Slot.all.filter { it.selected == 0 }.count()}")
+    println("NULL SLOT COUNT: ${Slot.all.filter { it.selected == null }.count()}")
+
 
     // To avoid exhaustive search, it is critical to start with slots having fixed values, then the most constrained slots dealing with most recurrences
     val sortedByMostConstrained = Slot.all.sortedWith(compareBy({it.selected?:1000 }, {0 - it.scheduledClass.recurrences}))
