@@ -1,4 +1,4 @@
-
+import java.time.DayOfWeek
 
 class BranchNode(val selectedValue: Int, val slot: Slot, val previous: BranchNode? = null) {
 
@@ -21,13 +21,32 @@ class BranchNode(val selectedValue: Int, val slot: Slot, val previous: BranchNod
 
     val constraintsMet = noConflictOnClass && noConflictOnBlock && noConflictOnFixed
 
+    val recurrencesStillPossible = when {
+
+        // If we reach past MONDAY in our search, we better have all of our 3-recurrences already scheduled on MONDAY
+        slot.selected == null && slot.block.dateTimeRange.start.dayOfWeek > DayOfWeek.MONDAY  ->
+                traverseBackwards.asSequence()
+                        .filter { it.slot.scheduledClass.recurrences == 3 }
+                        .groupBy { it.slot.scheduledClass }
+                        .all { (_,grp) -> grp.any { it.selectedValue == 1 } }
+
+        // If we reach past WEDNESDAY in our search, we better have all of our 2-recurrences already scheduled inside MONDAY through WEDNESDAY
+        slot.selected == null && slot.block.dateTimeRange.start.dayOfWeek > DayOfWeek.WEDNESDAY ->
+            traverseBackwards.asSequence()
+                    .filter { it.slot.scheduledClass.recurrences == 2 }
+                    .groupBy { it.slot.scheduledClass }
+                    .all { (_,grp) -> grp.any { it.selectedValue == 1 } }
+
+        else -> true
+    }
+
     val scheduleMet = traverseBackwards.asSequence()
             .filter { it.selectedValue == 1 }
             .map { it.slot.scheduledClass }
             .distinct()
             .count() == ScheduledClass.all.count()
 
-    val isContinuable = constraintsMet && traverseBackwards.count() < Slot.all.count()
+    val isContinuable = constraintsMet && recurrencesStillPossible && traverseBackwards.count() < Slot.all.count()
     val isSolution = scheduleMet && constraintsMet
 
     fun applySolution() {
@@ -45,8 +64,15 @@ fun executeBranchAndBound() {
     val sortedByMostConstrained = Slot.all.sortedWith(
             compareBy(
                     { it.selected?:1000 }, // fixed values go first, solvable values go last
-                    {it.block.dateTimeRange.start }, // encourage search to start at beginning of week
-                    {-it.scheduledClass.recurrences }, // and assign high-recurrence classes first
+                    {
+                        // prioritize slots dealing with recurrences
+                        val dow = it.block.dateTimeRange.start.dayOfWeek
+                        when {
+                            dow == DayOfWeek.MONDAY && it.scheduledClass.recurrences == 3 -> -1000
+                            dow <= DayOfWeek.WEDNESDAY && it.scheduledClass.recurrences == 2 -> -500
+                            else -> 0
+                        }
+                    }, // encourage search to start at beginning of week
                     {-it.scheduledClass.slotsNeededPerSession } // followed by class length
             )
     )
