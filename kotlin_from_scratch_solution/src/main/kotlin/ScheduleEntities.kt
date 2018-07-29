@@ -58,7 +58,6 @@ data class ScheduledClass(val id: Int,
     /** These slots should be fixed to zero **/
     val slotsFixedToZero by lazy {
         // broken recurrences
-        // TODO this is broken
         slots.rollingRecurrences(slotsNeeded, gap, recurrences, RecurrenceMode.PARTIAL_ONLY)
                 .asSequence()
                 .flatMap { it.asSequence() }
