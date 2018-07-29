@@ -21,9 +21,9 @@ val scheduledClasses = listOf(
         ScheduledClass(id=5, name="Calculus I", hoursLength=2.0, recurrences=2),
         ScheduledClass(id=6, name="Linear Algebra I", hoursLength=2.0, recurrences=3),
         ScheduledClass(id=7, name="Sociology 101", hoursLength=1.0, recurrences=2),
-        ScheduledClass(id=8, name="Biology 101", hoursLength=1.0, recurrences=2)/*,
+        ScheduledClass(id=8, name="Biology 101", hoursLength=1.0, recurrences=2),
         ScheduledClass(id=9, name="Supply Chain 300", hoursLength=2.5, recurrences=2),
-        ScheduledClass(id=10, name="Orientation 101",hoursLength=1.0, recurrences=1)*/ // TODO tight situations take awhile to search
+        ScheduledClass(id=10, name="Orientation 101",hoursLength=1.0, recurrences=1) // TODO tight situations take awhile to search
         )
 
 fun main(args: Array<String>) {

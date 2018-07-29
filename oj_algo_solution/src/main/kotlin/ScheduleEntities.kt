@@ -62,7 +62,7 @@ data class Block(val dateTimeRange: ClosedRange<LocalDateTime>) {
 data class ScheduledClass(val id: Int,
                           val name: String,
                           val hoursLength: Double,
-                          val repetitions: Int,
+                          val recurrences: Int,
                           val repetitionGapDays: Int = 2) {
 
     /** the # of slots between each recurrence */
@@ -78,7 +78,7 @@ data class ScheduledClass(val id: Int,
 
     /** yields slot groups for this scheduled class */
     val slotGroups by lazy {
-        slots.rollingRecurrences(slotsNeeded = slotsNeeded, gap = gapLengthInSlots, recurrences = repetitions)
+        slots.rollingRecurrences(slotsNeeded = slotsNeeded, gap = gapLengthInSlots, recurrences = recurrences)
     }
 
     /** yields slots that affect the given block for this scheduled class */
@@ -93,7 +93,7 @@ data class ScheduledClass(val id: Int,
     val end get() = start.plusMinutes((hoursLength * 60.0).toLong())
 
     /** returns the DayOfWeeks where recurrences take place */
-    val daysOfWeek get() = (0..(repetitions-1)).asSequence().map { start.dayOfWeek.plus(it.toLong() * repetitionGapDays) }.sorted()
+    val daysOfWeek get() = (0..(recurrences-1)).asSequence().map { start.dayOfWeek.plus(it.toLong() * repetitionGapDays) }.sorted()
 
     fun addConstraints() {
 
@@ -105,8 +105,8 @@ data class ScheduledClass(val id: Int,
             }
         }
 
-        //guide Mon/Wed/Fri for three repetitions
-        if (repetitions == 3) {
+        //guide Mon/Wed/Fri for three recurrences
+        if (recurrences == 3) {
             addExpression().level(1).apply {
                 slots.filter { it.block.dateTimeRange.start.dayOfWeek == DayOfWeek.MONDAY }
                         .forEach {
@@ -115,8 +115,8 @@ data class ScheduledClass(val id: Int,
             }
         }
 
-        //guide two repetitions to start on Mon, Tues, or Wed
-        if (repetitions == 2) {
+        //guide two recurrences to start on Mon, Tues, or Wed
+        if (recurrences == 2) {
             addExpression().level(1).apply {
                 slots.filter { it.block.dateTimeRange.start.dayOfWeek in DayOfWeek.MONDAY..DayOfWeek.WEDNESDAY }.forEach {
                     set(it.occupied, 1)
