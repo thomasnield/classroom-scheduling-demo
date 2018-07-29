@@ -76,7 +76,20 @@ fun executeBranchAndBound() {
                     {-it.scheduledClass.slotsNeededPerSession } // followed by class length
             )
     )
-
+//TODO this case is broken
+    /*
+    Psych 101- TUESDAY/THURSDAY 10:00-11:00
+    English 101- MONDAY/WEDNESDAY/FRIDAY 10:00-11:30
+    Math 300- MONDAY/WEDNESDAY 15:30-17:00
+    Psych 300- THURSDAY 14:00-17:00 *CONFLICT*
+    Calculus I- TUESDAY/THURSDAY 08:00-10:00
+    Linear Algebra I- MONDAY/WEDNESDAY/FRIDAY 08:00-10:00
+    Sociology 101- TUESDAY/THURSDAY 13:00-14:00
+    Biology 101- TUESDAY/THURSDAY 14:15-15:15 *CONFLICT*
+    Supply Chain 300- MONDAY/WEDNESDAY 13:00-15:30
+    Orientation 101- TUESDAY 14:00-15:00 *CONFLICT*
+    Geography 300- FRIDAY 13:00-16:00
+     */
     // this is a recursive function for exploring nodes in a branch-and-bound tree
     fun traverse(index: Int, currentBranch: BranchNode): BranchNode? {
 
