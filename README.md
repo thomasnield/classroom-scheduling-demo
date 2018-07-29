@@ -1,11 +1,11 @@
 # Schedule Generator Demo
-### Using Linear/Integer Optimization
+### Branch-and-Bound Discrete Optimization
 
 Companion blog article can be [found here](http://tomstechnicalblog.blogspot.com/2018/02/linear-programming-with-kotlin-part-iii.html).
 
-This was an exercise at creating a class schedule generator using [linear/integer optimization](https://en.wikipedia.org/wiki/Linear_programming). I finally got it working and I will blog about it later.
+This was an exercise at creating a class schedule generator using [branch-and-bound optimization](https://en.wikipedia.org/wiki/Branch_and_bound) and constraint propogation. 
 
-I used [Kotlin](http://kotlinlang.org/) with [ojAlgo](http://www.ojalgo.org/), which turned out to be an effective stack.
+I initially used [Kotlin](http://kotlinlang.org/) with [ojAlgo](http://www.ojalgo.org/), which turned out to be effective. However, I found implementing from scratch gave me more control and allowed me to optimize for the specific problem. Both implementations are in this repo. 
 
 For now, the model just assumes we are scheduling against one room.
 
@@ -24,6 +24,8 @@ Here is the starting data set:
 6) Linear Algebra I (2 hours, 3 sessions/week)
 7) Sociology 101 (1 hour, 2 sessions/week)
 8) Biology 101 (1 hour, 2 sessions/week)
+9) Supply Chain 300 (2.5 hours, 2 sessions/week)
+10) Orientation 101 (1 hours, 1 session/week)
 
 I set the model to put each recurring session 48 hours apart.
 
@@ -35,17 +37,19 @@ I set the model to put each recurring session 48 hours apart.
 ## Output
 
 ```
-Psych 101- WEDNESDAY/FRIDAY 10:30-11:30
-English 101- MONDAY/WEDNESDAY/FRIDAY 13:15-14:45
-Math 300- TUESDAY/THURSDAY 15:15-16:45
-Psych 300- THURSDAY 08:15-11:15
-Calculus I- TUESDAY/THURSDAY 13:15-15:15
-Linear Algebra I- MONDAY/WEDNESDAY/FRIDAY 08:15-10:15
-Sociology 101- WEDNESDAY/FRIDAY 16:00-17:00
-Biology 101- WEDNESDAY/FRIDAY 15:00-16:00
+Psych 101- MONDAY/WEDNESDAY 13:00-14:00
+English 101- MONDAY/WEDNESDAY/FRIDAY 08:00-09:30
+Math 300- MONDAY/WEDNESDAY 14:00-15:30
+Psych 300- FRIDAY 13:00-16:00
+Calculus I- TUESDAY/THURSDAY 08:00-10:00
+Linear Algebra I- MONDAY/WEDNESDAY/FRIDAY 09:30-11:30
+Sociology 101- MONDAY/WEDNESDAY 15:30-16:30
+Biology 101- TUESDAY/THURSDAY 10:00-11:00
+Supply Chain 300- TUESDAY/THURSDAY 13:00-15:30
+Orientation 101- TUESDAY 15:30-16:30
 ```
 
-![](https://github.com/thomasnield/blog_articles/blob/master/linear_programming_with_kotlin_part_iii/images/schedule_output2.png?raw=true)
+![](kotlin_from_scratch_solution/output.png)
 
 Obviously, a room cannot be occupied by more than one class at any time. The solver does this successfully and prevents any overlap in scheduling. 
 
@@ -54,33 +58,9 @@ Obviously, a room cannot be occupied by more than one class at any time. The sol
 
 Build the Kotlin project with Gradle, then run the `main()` function inside the `InputAndRun.kt` file. You can also change the hardcoded inputs in that file too.
 
-This can take 30-60 seconds to run depending on your machine's computing power. I learned I could put a few functions in the model to gently guide it away from unncessary territory. For instance, classes with 3 repetitions a week need to have the first session on Monday. There's no reason to have it explore any other permutations later in the week. 
+The optimizer should hopefully run in a few seconds and then display the schedule in the console output. 
 
-## Observations
 
-I studied linear/integer programming for the past few months with both Python and Java libraries. One thing I noticed quickly is a lot of libraries implement models as a sea of numbers, which can be difficult to debug, refactor, and comprehend. By using Kotlin and ojAlgo, I was able to create a highly organized model that is easy to comprehend and evolve by utilizing classes, fluent functional pipelines, and the Java/Kotlin standard library.
+## Resources
 
-The Java 8 Date/Time library was immensely helpful to turn 15-minute time increments into discrete integer intervals. The domain classes in my model were designed to provide both the `LocalDateTime` and discrete integer representations of time variables, making it friendly for both the model and developer.
-
-It was satisfying that Kotlin allowed me to create something procedural and hacky as I worked through my thought process, and yet I could safely extract out DSL's, functions, and API's later. This is something that should not be taken for granted, as a common workflow for many data science teams is to "hack up" something in R or Python, only to have it rewritten from scratch later in Java. For this reason, a lot of models stay on data scientists' laptops and never see production.
-
- With a lot of Python, R, and even Java libraries, it is easy to be constrained by the maintainability of the code. Thankfully, with this stack I spent far more time with a pencil and paper trying to figure out the algebraic linear functions. Once I had that figured out, execution was easy. Problems only surfaced when I did something conceptually wrong with my math.
-
-## Roadmap
-
-* [x] Optimize non-overlap binary constraints for discrete values, not linear
-
-* [x] Space out recurring classes by one day
-
-* [x] Find performance bottlenecks
-
-* [x] Constrain scheduling to only available times above
-
-* [x] Investigate 15 minute spills past boundaries
-
-* [ ] Wrap TornadoFX user interface around model
-
-* [ ] Support multiple rooms
-
-* [ ] Explore [OptaPlanner](https://docs.optaplanner.org/7.4.1.Final/optaplanner-docs/html_single/index.html) implementation 
-
+[Coursera Class on Discrete Optimization](https://www.coursera.org/learn/discrete-optimization/home/welcome)
