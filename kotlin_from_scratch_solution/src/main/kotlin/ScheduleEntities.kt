@@ -1,6 +1,5 @@
 
 import java.time.LocalDateTime
-import java.time.LocalTime
 
 
 /** A discrete, 15-minute chunk of time a class can be scheduled on */
@@ -38,7 +37,7 @@ data class ScheduledClass(val id: Int,
     val gap = repetitionGapDays * 24 * 4
 
     /** the # of slots needed for a given occurrence */
-    val slotsNeeded = (hoursLength * 4).toInt()
+    val slotsNeededPerSession = (hoursLength * 4).toInt()
 
     /** yields slots for this given scheduled class */
     val slots by lazy {
@@ -47,7 +46,7 @@ data class ScheduledClass(val id: Int,
 
     /** yields slot groups for this scheduled class */
     val recurrenceSlots by lazy {
-        slots.rollingRecurrences(slotsNeeded = slotsNeeded, gap = gap, recurrences = recurrences)
+        slots.rollingRecurrences(slotsNeeded = slotsNeededPerSession, gap = gap, recurrences = recurrences)
     }
 
     /** yields slots that affect the given block for this scheduled class */
@@ -58,7 +57,7 @@ data class ScheduledClass(val id: Int,
     /** These slots should be fixed to zero **/
     val slotsFixedToZero by lazy {
         // broken recurrences
-        slots.rollingRecurrences(slotsNeeded, gap, recurrences, RecurrenceMode.PARTIAL_ONLY)
+        slots.rollingRecurrences(slotsNeededPerSession, gap, recurrences, RecurrenceMode.PARTIAL_ONLY)
                 .asSequence()
                 .flatMap { it.asSequence() }
                 .flatMap { it.asSequence() }

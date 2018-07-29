@@ -23,7 +23,10 @@ val scheduledClasses = listOf(
         ScheduledClass(id=7, name="Sociology 101", hoursLength=1.0, recurrences=2),
         ScheduledClass(id=8, name="Biology 101", hoursLength=1.0, recurrences=2),
         ScheduledClass(id=9, name="Supply Chain 300", hoursLength=2.5, recurrences=2),
-        ScheduledClass(id=10, name="Orientation 101",hoursLength=1.0, recurrences=1)
+        ScheduledClass(id=10, name="Orientation 101",hoursLength=1.0, recurrences=1),
+
+        // TODO how do we check for infeasibility quickly?
+        ScheduledClass(id=11, name="Geography 300", hoursLength=3.0, recurrences=1)
 )
 
 

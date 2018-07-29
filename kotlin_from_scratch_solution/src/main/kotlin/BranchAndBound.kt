@@ -40,13 +40,14 @@ fun executeBranchAndBound() {
     // pre-constraints
     ScheduledClass.all.flatMap { it.slotsFixedToZero }.forEach { it.selected = 0 }
 
-    // To avoid exhaustive search, it is critical to start with slots having fixed values, then the most "constrained" slots
-    // Finding the right heuristic to define "constrained" is the key part
+    // To avoid exhaustive search, it is critical to sort solve variables on the correct heuristic
+    // First sort on slots having fixed values being first, followed by the most "constrained" slots
     val sortedByMostConstrained = Slot.all.sortedWith(
             compareBy(
                     { it.selected?:1000 }, // fixed values go first, solvable values go last
-                    {it.block.dateTimeRange.start}, // encourage search to start at beginning of week
-                    {-it.scheduledClass.recurrences} // and assign high-recurrence classes first
+                    {it.block.dateTimeRange.start }, // encourage search to start at beginning of week
+                    {-it.scheduledClass.recurrences }, // and assign high-recurrence classes first
+                    {-it.scheduledClass.slotsNeededPerSession } // followed by class length
             )
     )
 
