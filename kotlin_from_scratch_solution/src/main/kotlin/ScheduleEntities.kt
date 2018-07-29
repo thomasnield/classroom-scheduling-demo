@@ -1,5 +1,6 @@
 
 import java.time.LocalDateTime
+import java.time.LocalTime
 
 
 /** A discrete, 15-minute chunk of time a class can be scheduled on */
@@ -57,24 +58,29 @@ data class ScheduledClass(val id: Int,
     /** These slots should be fixed to zero **/
     val slotsFixedToZero by lazy {
         // broken recurrences
+        // TODO this is broken
         slots.rollingRecurrences(slotsNeeded, gap, recurrences, RecurrenceMode.PARTIAL_ONLY)
                 .asSequence()
                 .flatMap { it.asSequence() }
                 .flatMap { it.asSequence() }
                 // operating day blackouts
-                .plus(slots.asSequence().filter { !it.block.withinOperatingDay })
-                // affected slots that occupy blackouts
-/*                .plus(
+                // affected slots that cross into non-operating day
+                .plus(
                         recurrenceSlots.asSequence()
-                                .filter { it.any { it.any { !it.block.withinOperatingDay }} }
                                 .flatMap { it.asSequence() }
-                                .flatMap { it.asSequence() }
-                )*/
+                                .filter { it.any { !it.block.withinOperatingDay }}
+                                .map { it.first() }
+                )
                 .distinct()
-                .onEach { it.selected = 0 }
+                .onEach {
+                    it.selected = 0
+                }
                 .toList()
     }
 
+    val availableSlots by lazy {
+        slots.filter { it !in slotsFixedToZero }
+    }
     /** translates and returns the optimized start time of the class */
     val start get() = slots.asSequence().filter { it.selected == 1 }.map { it.block.dateTimeRange.start }.min()!!
 
@@ -112,10 +118,10 @@ fun <T> List<T>.rollingBatches(batchSize: Int) = (0..size).asSequence().map { i 
 
 enum class RecurrenceMode { PARTIAL_ONLY, FULL_ONLY, ALL }
 
-fun <T> List<T>.rollingRecurrences(slotsNeeded: Int, gap: Int, recurrences: Int, mode: RecurrenceMode = RecurrenceMode.FULL_ONLY) =
+fun List<Slot>.rollingRecurrences(slotsNeeded: Int, gap: Int, recurrences: Int, mode: RecurrenceMode = RecurrenceMode.FULL_ONLY) =
         (0..size).asSequence().map { i ->
             (1..recurrences).asSequence().map { (it - 1) * gap }
-                    .filter { it + i < size}
+                    .filter { it + i < size }
                     .map { r ->
                         subList(i + r, (i + r + slotsNeeded).let { if (it > size) size else it })
                     }
