@@ -20,14 +20,15 @@ class BranchNode(val selectedValue: Int, val slot: Slot, val previous: BranchNod
             .sum() <= 1
 
 
+    // TODO this is extremely slow
     // tight situations can result in indirect overlaps on recurrences, which need to be avoided
-    val noIndirectOverlaps: Boolean get() = slot.block.affectingSlots.toSet().let { affectingSlots ->
+    val noIndirectOverlaps: Boolean get() = true /*slot.block.affectingSlots.toSet().let { affectingSlots ->
         traverseBackwards.asSequence()
                 .filter { it.selectedValue == 1 }
                 .filter { it.slot.block.affectingSlots.any { it in affectingSlots } }
                 .count() <= 1
     }
-
+*/
     val noConflictOnFixed = !(selectedValue == 1 && slot in slot.scheduledClass.slotsFixedToZero)
 
     val constraintsMet = noConflictOnClass && noConflictOnBlock && noConflictOnFixed && noIndirectOverlaps
