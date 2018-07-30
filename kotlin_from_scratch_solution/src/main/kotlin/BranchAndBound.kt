@@ -4,22 +4,33 @@ class BranchNode(val selectedValue: Int, val slot: Slot, val previous: BranchNod
 
     val traverseBackwards =  generateSequence(this) { it.previous }.toList()
 
-    val noConflictOnClass = traverseBackwards.asSequence()
+    val noConflictOnClass get() = traverseBackwards.asSequence()
             .filter { it.slot.scheduledClass == slot.scheduledClass }
             .map { it.selectedValue }
             .sum() <= 1
 
-    val slotAffectingNodes = slot.block.affectingSlots.toSet().let { affectSlots ->
+    val slotAffectingNodes get() = slot.block.affectingSlots.toSet().let { affectSlots ->
         traverseBackwards.asSequence().filter { it.slot in affectSlots }
     }.toList()
 
-    val noConflictOnBlock = slotAffectingNodes.asSequence()
+
+    // search backwards
+    val noConflictOnBlock get() = slotAffectingNodes.asSequence()
             .map { it.selectedValue }
             .sum() <= 1
 
+
+    // tight situations can result in indirect overlaps on recurrences, which need to be avoided
+    val noIndirectOverlaps: Boolean get() = slot.block.affectingSlots.toSet().let { affectingSlots ->
+        traverseBackwards.asSequence()
+                .filter { it.selectedValue == 1 }
+                .filter { it.slot.block.affectingSlots.any { it in affectingSlots } }
+                .count() <= 1
+    }
+
     val noConflictOnFixed = !(selectedValue == 1 && slot in slot.scheduledClass.slotsFixedToZero)
 
-    val constraintsMet = noConflictOnClass && noConflictOnBlock && noConflictOnFixed
+    val constraintsMet = noConflictOnClass && noConflictOnBlock && noConflictOnFixed && noIndirectOverlaps
 
     val recurrencesStillPossible = when {
 
@@ -64,12 +75,15 @@ fun executeBranchAndBound() {
     val sortedByMostConstrained = Slot.all.sortedWith(
             compareBy(
                     { it.selected?:1000 }, // fixed values go first, solvable values go last
+                    { it.block.dateTimeRange.start },
                     {
                         // prioritize slots dealing with recurrences
                         val dow = it.block.dateTimeRange.start.dayOfWeek
                         when {
                             dow == DayOfWeek.MONDAY && it.scheduledClass.recurrences == 3 -> -1000
-                            dow <= DayOfWeek.WEDNESDAY && it.scheduledClass.recurrences == 2 -> -500
+                            dow != DayOfWeek.MONDAY && it.scheduledClass.recurrences == 3 -> 1000
+                            dow in DayOfWeek.MONDAY..DayOfWeek.WEDNESDAY && it.scheduledClass.recurrences == 2 -> -500
+                            dow !in DayOfWeek.MONDAY..DayOfWeek.WEDNESDAY && it.scheduledClass.recurrences == 2 -> 500
                             else -> 0
                         }
                     }, // encourage search to start at beginning of week
@@ -81,13 +95,15 @@ fun executeBranchAndBound() {
     Psych 101- TUESDAY/THURSDAY 10:00-11:00
     English 101- MONDAY/WEDNESDAY/FRIDAY 10:00-11:30
     Math 300- MONDAY/WEDNESDAY 15:30-17:00
-    Psych 300- THURSDAY 14:00-17:00 *CONFLICT*
     Calculus I- TUESDAY/THURSDAY 08:00-10:00
     Linear Algebra I- MONDAY/WEDNESDAY/FRIDAY 08:00-10:00
     Sociology 101- TUESDAY/THURSDAY 13:00-14:00
+
     Biology 101- TUESDAY/THURSDAY 14:15-15:15 *CONFLICT*
-    Supply Chain 300- MONDAY/WEDNESDAY 13:00-15:30
+    Psych 300- THURSDAY 14:00-17:00 *CONFLICT*
     Orientation 101- TUESDAY 14:00-15:00 *CONFLICT*
+
+    Supply Chain 300- MONDAY/WEDNESDAY 13:00-15:30
     Geography 300- FRIDAY 13:00-16:00
      */
     // this is a recursive function for exploring nodes in a branch-and-bound tree
