@@ -34,21 +34,22 @@ val scheduledClasses = listOf(
 fun main(args: Array<String>) {
 
 
-/*
+/*    executeBranchAndBound()
+
     Slot.all.forEach {
         println("${if (it.block.withinOperatingDay) 0 else 1},${it.scheduledClass.name},${it.block.dateTimeRange.start},${it.block.dateTimeRange.endInclusive},${it.selected}")
-    }
-*/
+    }*/
 
-    executeBranchAndBound()
+
+/*    executeBranchAndBound()
 
     Block.all.asSequence().first { it.dateTimeRange.start == LocalDateTime.of(2017, 10, 17,15,0) }
-            .affectingSlots.asSequence().filter { it.block.dateTimeRange.start == LocalDateTime.of(2017,10,17,14,0) }.forEach {
+            .affectingSlots.asSequence()*//*.filter { it.block.dateTimeRange.start == LocalDateTime.of(2017,10,17,14,0) }*//*.forEach {
                 println("$it = ${it.selected
                 }")
-            }
+            }*/
 
-   /* println("Job started at ${LocalTime.now()}\r\n")
+    println("Job started at ${LocalTime.now()}\r\n")
 
     executeBranchAndBound()
 
@@ -56,6 +57,6 @@ fun main(args: Array<String>) {
         println("${it.name}- ${it.daysOfWeek.joinToString("/")} ${it.start.toLocalTime()}-${it.end.toLocalTime()}")
     }
 
-    println("\r\nJob ended at ${LocalTime.now()}")*/
+    println("\r\nJob ended at ${LocalTime.now()}")
 
 }

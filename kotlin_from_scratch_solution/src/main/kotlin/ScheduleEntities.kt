@@ -46,7 +46,7 @@ data class ScheduledClass(val id: Int,
 
     /** yields slot groups for this scheduled class */
     val recurrenceSlots by lazy {
-        slots.rollingRecurrences(slotsNeeded = slotsNeededPerSession, gap = gap, recurrences = recurrences)
+        slots.rollingRecurrences(slotsNeeded = slotsNeededPerSession, gap = gap, recurrences = recurrences).toSet()
     }
 
     /** yields slots that affect the given block for this scheduled class */

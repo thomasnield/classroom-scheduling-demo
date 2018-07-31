@@ -25,21 +25,21 @@ class BranchNode(val selectedValue: Int, val slot: Slot, val previous: BranchNod
     // TODO this is extremely slow
     // tight situations can result in indirect overlaps on recurrences, which need to be avoided
     // so check for any overlaps in affecting slot zones and ensure there are none
-/*
+
     val noIndirectOverlaps: Boolean get() = if (selectedValue == 0) true
     else
         traverseBackwards.asSequence()
                 .filter { it.selectedValue == 1 && it != this && it.slot.block.dateTimeRange.start < slot.block.dateTimeRange.start }
-                .filter { other -> other.slot.block.affectingSlots.any { it in slot.block.affectingSlots }  }
+                .filter { other -> other.slot.scheduledClass.recurrenceSlots.first { it.first().first().block == other.slot.block }.asSequence().flatMap { it.asSequence() }.any { it in slot.block.affectingSlots }  }
                 .map { it.selectedValue }
                 .sum() == 0
-*/
+
 
 
 
     val noConflictOnFixed get() = !(selectedValue == 1 && slot in slot.scheduledClass.slotsFixedToZero)
 
-    val constraintsMet get() = if (selectedValue == 0) true else noConflictOnClass && noConflictOnBlock && noConflictOnFixed //&& noIndirectOverlaps
+    val constraintsMet get() = if (selectedValue == 0) true else noConflictOnClass && noConflictOnBlock && noConflictOnFixed && noIndirectOverlaps
 
     val recurrencesStillPossible get() = when {
 
