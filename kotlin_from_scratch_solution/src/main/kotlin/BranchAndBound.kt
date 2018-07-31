@@ -4,7 +4,7 @@ class BranchNode(val selectedValue: Int, val slot: Slot, val previous: BranchNod
 
     val traverseBackwards =  generateSequence(this) { it.previous }.toList()
 
-    val noConflictOnClass get() = traverseBackwards.asSequence()
+    val noConflictOnClass get() = if (selectedValue == 0) true else traverseBackwards.asSequence()
             .filter { it.slot.scheduledClass == slot.scheduledClass }
             .map { it.selectedValue }
             .sum() <= 1
@@ -15,29 +15,29 @@ class BranchNode(val selectedValue: Int, val slot: Slot, val previous: BranchNod
 
 
     // search backwards
-    val noConflictOnBlock get() = slotAffectingNodes.asSequence()
+    val noConflictOnBlock get() =  if (selectedValue == 0) true else slotAffectingNodes.asSequence()
             .map { it.selectedValue }
             .sum() <= 1
 
 
     // TODO this is extremely slow
     // tight situations can result in indirect overlaps on recurrences, which need to be avoided
-
+    // so check for any overlaps in affecting slot zones and ensure there are none
     val noIndirectOverlaps: Boolean get() = if (selectedValue == 0) true
     else
         traverseBackwards.asSequence()
-                .filter { it.selectedValue == 1 }
-                .filter { other -> slot.block.affectingSlots.any { it in other.slot.block.affectingSlots } }
+                .filter { it.selectedValue == 1 && it != this }
+                .filter { it.slot.block.affectingSlots.any { it in slot.block.affectingSlots } }
                 .map { it.selectedValue }
-                .sum()/*.also { if (it > 1) println("indirect overlap found ${slot.scheduledClass.name}") }*/ <= 1
+                .sum() == 0
 
 
 
-    val noConflictOnFixed = !(selectedValue == 1 && slot in slot.scheduledClass.slotsFixedToZero)
+    val noConflictOnFixed get() = !(selectedValue == 1 && slot in slot.scheduledClass.slotsFixedToZero)
 
-    val constraintsMet = noConflictOnClass && noConflictOnBlock && noConflictOnFixed && noIndirectOverlaps
+    val constraintsMet get() = if (selectedValue == 0) true else noConflictOnClass && noConflictOnBlock && noConflictOnFixed && noIndirectOverlaps
 
-    val recurrencesStillPossible = when {
+    val recurrencesStillPossible get() = when {
 
         // If we reach past MONDAY in our search, we better have all of our 3-recurrences already scheduled on MONDAY
         slot.selected == null && slot.block.dateTimeRange.start.dayOfWeek > DayOfWeek.MONDAY  ->
@@ -56,14 +56,14 @@ class BranchNode(val selectedValue: Int, val slot: Slot, val previous: BranchNod
         else -> true
     }
 
-    val scheduleMet = traverseBackwards.asSequence()
+    val scheduleMet get() = traverseBackwards.asSequence()
             .filter { it.selectedValue == 1 }
             .map { it.slot.scheduledClass }
             .distinct()
             .count() == ScheduledClass.all.count()
 
-    val isContinuable = constraintsMet && recurrencesStillPossible && traverseBackwards.count() < Slot.all.count()
-    val isSolution = scheduleMet && constraintsMet
+    val isContinuable get() = constraintsMet && recurrencesStillPossible && traverseBackwards.count() < Slot.all.count()
+    val isSolution get() = scheduleMet && constraintsMet
 
     fun applySolution() {
         slot.selected = selectedValue

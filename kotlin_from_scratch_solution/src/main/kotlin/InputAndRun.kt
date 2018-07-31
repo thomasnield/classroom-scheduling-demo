@@ -23,11 +23,11 @@ val scheduledClasses = listOf(
         ScheduledClass(id=7, name="Sociology 101", hoursLength=1.0, recurrences=2),
         ScheduledClass(id=8, name="Biology 101", hoursLength=1.0, recurrences=2),
         ScheduledClass(id=9, name="Supply Chain 300", hoursLength=2.5, recurrences=2),
-        ScheduledClass(id=10, name="Orientation 101",hoursLength=1.0, recurrences=1),
+        ScheduledClass(id=10, name="Orientation 101",hoursLength=1.0, recurrences=1)/*,
 
         // TODO ojAlgo says this is feasible and finds solution more quickly
         // We need to continuously check for feasibility as well in terms of classes being schedulable still at a given branch node
-        ScheduledClass(id=11, name="Geography 300", hoursLength=3.0, recurrences=1)
+        ScheduledClass(id=11, name="Geography 300", hoursLength=3.0, recurrences=1)*/
         )
 
 fun main(args: Array<String>) {

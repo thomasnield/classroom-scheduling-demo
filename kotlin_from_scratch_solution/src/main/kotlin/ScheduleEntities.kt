@@ -12,7 +12,7 @@ data class Block(val dateTimeRange: ClosedRange<LocalDateTime>) {
             timeRange.start in operatingDay &&
             timeRange.endInclusive in operatingDay
 
-    val affectingSlots by lazy { ScheduledClass.all.asSequence().flatMap { it.affectingSlotsFor(this) }.toSet() }
+    val affectingSlots by lazy { ScheduledClass.all.asSequence().flatMap { it.affectingSlotsFor(this).asSequence() }.toSet() }
 
     companion object {
 
@@ -53,6 +53,7 @@ data class ScheduledClass(val id: Int,
     fun affectingSlotsFor(block: Block) = recurrenceSlots.asSequence()
             .filter { it.flatMap { it }.any { it.block == block } }
             .map { it.first().first() }
+            .toSet()
 
     /** These slots should be fixed to zero **/
     val slotsFixedToZero by lazy {
