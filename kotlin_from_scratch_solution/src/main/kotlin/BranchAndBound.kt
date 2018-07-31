@@ -15,7 +15,9 @@ class BranchNode(val selectedValue: Int, val slot: Slot, val previous: BranchNod
 
 
     // search backwards
-    val noConflictOnBlock get() =  if (selectedValue == 0) true else slotAffectingNodes.asSequence()
+    // TODO not working
+    val noConflictOnBlock get() =  if (selectedValue == 0) true
+    else slotAffectingNodes.asSequence()
             .map { it.selectedValue }
             .sum() <= 1
 
@@ -23,19 +25,21 @@ class BranchNode(val selectedValue: Int, val slot: Slot, val previous: BranchNod
     // TODO this is extremely slow
     // tight situations can result in indirect overlaps on recurrences, which need to be avoided
     // so check for any overlaps in affecting slot zones and ensure there are none
+/*
     val noIndirectOverlaps: Boolean get() = if (selectedValue == 0) true
     else
         traverseBackwards.asSequence()
-                .filter { it.selectedValue == 1 && it != this }
-                .filter { it.slot.block.affectingSlots.any { it in slot.block.affectingSlots } }
+                .filter { it.selectedValue == 1 && it != this && it.slot.block.dateTimeRange.start < slot.block.dateTimeRange.start }
+                .filter { other -> other.slot.block.affectingSlots.any { it in slot.block.affectingSlots }  }
                 .map { it.selectedValue }
                 .sum() == 0
+*/
 
 
 
     val noConflictOnFixed get() = !(selectedValue == 1 && slot in slot.scheduledClass.slotsFixedToZero)
 
-    val constraintsMet get() = if (selectedValue == 0) true else noConflictOnClass && noConflictOnBlock && noConflictOnFixed && noIndirectOverlaps
+    val constraintsMet get() = if (selectedValue == 0) true else noConflictOnClass && noConflictOnBlock && noConflictOnFixed //&& noIndirectOverlaps
 
     val recurrencesStillPossible get() = when {
 
@@ -80,6 +84,7 @@ fun executeBranchAndBound() {
     val sortedByMostConstrained = Slot.all.sortedWith(
             compareBy(
                     { it.selected?:1000 }, // fixed values go first, solvable values go last
+                    { it.block.dateTimeRange.start },
                     {
                         // prioritize slots dealing with recurrences
                         val dow = it.block.dateTimeRange.start.dayOfWeek
@@ -91,8 +96,7 @@ fun executeBranchAndBound() {
                             else -> 0
                         }
                     }, // encourage search to start at beginning of week
-                    {-it.scheduledClass.slotsNeededPerSession }, // followed by class length
-                    { it.block.dateTimeRange.start }
+                    {-it.scheduledClass.slotsNeededPerSession } // followed by class length
             )
     )
 //TODO this case is broken

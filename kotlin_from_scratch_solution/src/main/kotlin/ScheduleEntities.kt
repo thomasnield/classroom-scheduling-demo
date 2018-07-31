@@ -52,7 +52,7 @@ data class ScheduledClass(val id: Int,
     /** yields slots that affect the given block for this scheduled class */
     fun affectingSlotsFor(block: Block) = recurrenceSlots.asSequence()
             .filter { it.flatMap { it }.any { it.block == block } }
-            .map { it.first().first() }
+            .flatMap { it.asSequence().flatMap { it.asSequence() } }
             .toSet()
 
     /** These slots should be fixed to zero **/
@@ -99,6 +99,9 @@ data class ScheduledClass(val id: Int,
 data class Slot(val block: Block, val scheduledClass: ScheduledClass) {
 
     var selected: Int? = null
+
+    // TODO implement and constrain to 1
+    //val impactedDownstreamSlots get() =
 
     companion object {
 

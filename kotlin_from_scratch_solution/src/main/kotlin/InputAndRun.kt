@@ -1,4 +1,5 @@
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 
 
@@ -23,17 +24,31 @@ val scheduledClasses = listOf(
         ScheduledClass(id=7, name="Sociology 101", hoursLength=1.0, recurrences=2),
         ScheduledClass(id=8, name="Biology 101", hoursLength=1.0, recurrences=2),
         ScheduledClass(id=9, name="Supply Chain 300", hoursLength=2.5, recurrences=2),
-        ScheduledClass(id=10, name="Orientation 101",hoursLength=1.0, recurrences=1)/*,
+        ScheduledClass(id=10, name="Orientation 101",hoursLength=1.0, recurrences=1),
 
         // TODO ojAlgo says this is feasible and finds solution more quickly
         // We need to continuously check for feasibility as well in terms of classes being schedulable still at a given branch node
-        ScheduledClass(id=11, name="Geography 300", hoursLength=3.0, recurrences=1)*/
+        ScheduledClass(id=11, name="Geography 300", hoursLength=3.0, recurrences=1)
         )
 
 fun main(args: Array<String>) {
 
 
-    println("Job started at ${LocalTime.now()}\r\n")
+/*
+    Slot.all.forEach {
+        println("${if (it.block.withinOperatingDay) 0 else 1},${it.scheduledClass.name},${it.block.dateTimeRange.start},${it.block.dateTimeRange.endInclusive},${it.selected}")
+    }
+*/
+
+    executeBranchAndBound()
+
+    Block.all.asSequence().first { it.dateTimeRange.start == LocalDateTime.of(2017, 10, 17,15,0) }
+            .affectingSlots.asSequence().filter { it.block.dateTimeRange.start == LocalDateTime.of(2017,10,17,14,0) }.forEach {
+                println("$it = ${it.selected
+                }")
+            }
+
+   /* println("Job started at ${LocalTime.now()}\r\n")
 
     executeBranchAndBound()
 
@@ -41,6 +56,6 @@ fun main(args: Array<String>) {
         println("${it.name}- ${it.daysOfWeek.joinToString("/")} ${it.start.toLocalTime()}-${it.end.toLocalTime()}")
     }
 
-    println("\r\nJob ended at ${LocalTime.now()}")
+    println("\r\nJob ended at ${LocalTime.now()}")*/
 
 }
