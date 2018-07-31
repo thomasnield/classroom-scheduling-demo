@@ -22,13 +22,17 @@ class BranchNode(val selectedValue: Int, val slot: Slot, val previous: BranchNod
 
     // TODO this is extremely slow
     // tight situations can result in indirect overlaps on recurrences, which need to be avoided
-    val noIndirectOverlaps: Boolean get() = true /*slot.block.affectingSlots.toSet().let { affectingSlots ->
+
+    val noIndirectOverlaps: Boolean get() = if (selectedValue == 0) true
+    else
         traverseBackwards.asSequence()
                 .filter { it.selectedValue == 1 }
-                .filter { it.slot.block.affectingSlots.any { it in affectingSlots } }
-                .count() <= 1
-    }
-*/
+                .filter { other -> slot.block.affectingSlots.any { it in other.slot.block.affectingSlots } }
+                .map { it.selectedValue }
+                .sum()/*.also { if (it > 1) println("indirect overlap found ${slot.scheduledClass.name}") }*/ <= 1
+
+
+
     val noConflictOnFixed = !(selectedValue == 1 && slot in slot.scheduledClass.slotsFixedToZero)
 
     val constraintsMet = noConflictOnClass && noConflictOnBlock && noConflictOnFixed && noIndirectOverlaps
@@ -76,7 +80,6 @@ fun executeBranchAndBound() {
     val sortedByMostConstrained = Slot.all.sortedWith(
             compareBy(
                     { it.selected?:1000 }, // fixed values go first, solvable values go last
-                    { it.block.dateTimeRange.start },
                     {
                         // prioritize slots dealing with recurrences
                         val dow = it.block.dateTimeRange.start.dayOfWeek
@@ -88,7 +91,8 @@ fun executeBranchAndBound() {
                             else -> 0
                         }
                     }, // encourage search to start at beginning of week
-                    {-it.scheduledClass.slotsNeededPerSession } // followed by class length
+                    {-it.scheduledClass.slotsNeededPerSession }, // followed by class length
+                    { it.block.dateTimeRange.start }
             )
     )
 //TODO this case is broken
