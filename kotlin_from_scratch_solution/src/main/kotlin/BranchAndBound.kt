@@ -106,7 +106,7 @@ fun executeBranchAndBound() {
                             else -> 0
                         }
                     }, // encourage search to start at beginning of week
-                    {-it.scheduledClass.slotsNeededPerSession } // followed by class length
+                    {-it.scheduledClass.slotsNeededPerSession } // followed by class length,
             )
     )
 
