@@ -27,18 +27,22 @@ class BranchNode(val selectedValue: Int, val slot: Slot, val previous: BranchNod
     // TODO this is coming up as INFEASIBLE
     // tight situations can result in indirect overlaps on recurrences, which need to be avoided
     // so check for any overlaps in affecting slot zones and ensure there are none
-    val noIndirectOverlaps: Boolean get() = if (selectedValue == 0) true
+    val noIndirectOverlaps: Boolean get() = if (selectedValue == 0)
+        true
     else
-        recurrenceSlots.asSequence().filter { it != slot }.flatMap { slot ->
+        recurrenceSlots.asSequence()
+                .filter { it != slot }
+                .all { slot ->
 
-        val slotGroup = slot.scheduledClass.recurrenceSlotsForStart(slot.block)
+                    val slotGroup = slot.scheduledClass.recurrenceSlotsForStart(slot.block).toSet()
 
-        slotGroup.asSequence().flatMap { slotGroupSlot ->
-            traverseBackwards.asSequence().filter { it.slot in slotGroupSlot.block.affectingSlots }
-        }.filterNotNull()
-         .filter { it.slot != slot }
-        .map { it.selectedValue }
-    }.sum() == 0
+                    slotGroup.asSequence().flatMap { slotGroupSlot ->
+                        traverseBackwards.asSequence().filter { it.slot in slotGroupSlot.block.affectingSlots }
+                    }.filterNotNull()
+                     .filter { it.slot != slot }
+                    .map { it.selectedValue }
+                    .sum() == 0
+                }
 
 
 
