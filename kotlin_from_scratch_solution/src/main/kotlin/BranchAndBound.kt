@@ -6,10 +6,11 @@ class BranchNode(val selectedValue: Int, val slot: Slot, val previous: BranchNod
 
     val selectedOnlyTraverseBackwards by lazy { traverseBackwards.filter { it.selectedValue == 1 } }
 
-    val noConflictOnClass get() = if (selectedValue == 0) true else traverseBackwards.asSequence()
+    val noConflictOnClass get() = if (selectedValue == 0) true else
+        selectedOnlyTraverseBackwards
+            .asSequence()
             .filter { it.slot.scheduledClass == slot.scheduledClass }
-            .map { it.selectedValue }
-            .sum() <= 1
+             .take(2).count() <= 1
 
     val slotAffectingNodes by lazy { traverseBackwards.asSequence().filter { it.slot in slot.block.affectingSlots }.toList() }
 
@@ -31,7 +32,7 @@ class BranchNode(val selectedValue: Int, val slot: Slot, val previous: BranchNod
 
     val noConflictOnFixed get() = selectedValue == 0 || slot !in slot.scheduledClass.slotsFixedToZero
 
-    val constraintsMet get() = if (selectedValue == 0) true else noConflictOnFixed && noConflictOnClass && noConflictOnBlock && noRecurrenceOverlaps
+    val constraintsMet get() = if (selectedValue == 0) true else noConflictOnFixed && noConflictOnClass && noConflictOnBlock
 
     val scheduleStillPossible get() = when {
 
@@ -53,12 +54,13 @@ class BranchNode(val selectedValue: Int, val slot: Slot, val previous: BranchNod
     }
 
     val scheduleMet get() = selectedOnlyTraverseBackwards
+            .asSequence()
             .map { it.slot.scheduledClass }
             .distinct()
             .count() == ScheduledClass.all.count()
 
     val isContinuable get() = constraintsMet && scheduleStillPossible &&  traverseBackwards.count() < Slot.all.count()
-    val isSolution get() = scheduleMet && constraintsMet
+    val isSolution get() = scheduleMet && constraintsMet && noRecurrenceOverlaps
 
     fun applySolution() {
         slot.selected = selectedValue
