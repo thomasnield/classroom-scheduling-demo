@@ -1,5 +1,4 @@
 import java.time.DayOfWeek
-import java.time.LocalDateTime
 
 class BranchNode(val selectedValue: Int, val slot: Slot, val previous: BranchNode? = null) {
 
@@ -31,15 +30,17 @@ class BranchNode(val selectedValue: Int, val slot: Slot, val previous: BranchNod
         true
     else
         recurrenceSlots.asSequence()
-                .filter { it != slot }
                 .all { slot ->
 
                     val slotGroup = slot.scheduledClass.recurrenceSlotsForStart(slot.block).toSet()
 
                     slotGroup.asSequence().flatMap { slotGroupSlot ->
-                        traverseBackwards.asSequence().filter { it.slot in slotGroupSlot.block.affectingSlots }
+                        val otherRecurrenceSlots = slotGroupSlot.scheduledClass.recurrenceSlotsForStart(slot.block).toSet()
+
+                        traverseBackwards.asSequence().filter {
+                            it.slot.scheduledClass != slot.scheduledClass && it.slot in otherRecurrenceSlots
+                        }
                     }.filterNotNull()
-                     .filter { it.slot != slot }
                     .map { it.selectedValue }
                     .sum() == 0
                 }
@@ -50,7 +51,7 @@ class BranchNode(val selectedValue: Int, val slot: Slot, val previous: BranchNod
 
     val constraintsMet get() = if (selectedValue == 0) true else noConflictOnClass && noConflictOnBlock && noConflictOnFixed && noIndirectOverlaps
 
-    val recurrencesStillPossible get() = when {
+    val scheduleStillPossible get() = when {
 
         // If we reach past MONDAY in our search, we better have all of our 3-recurrences already scheduled on MONDAY
         slot.selected == null && slot.block.dateTimeRange.start.dayOfWeek > DayOfWeek.MONDAY  ->
@@ -75,7 +76,7 @@ class BranchNode(val selectedValue: Int, val slot: Slot, val previous: BranchNod
             .distinct()
             .count() == ScheduledClass.all.count()
 
-    val isContinuable get() = constraintsMet && recurrencesStillPossible && traverseBackwards.count() < Slot.all.count()
+    val isContinuable get() = constraintsMet && scheduleStillPossible && traverseBackwards.count() < Slot.all.count()
     val isSolution get() = scheduleMet && constraintsMet
 
     fun applySolution() {
