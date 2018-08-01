@@ -27,7 +27,7 @@ class BranchNode(val selectedValue: Int, val slot: Slot, val previous: BranchNod
                         .sum() <= 1
             }
 
-    val noConflictOnFixed get() = !(selectedValue == 1 && slot in slot.scheduledClass.slotsFixedToZero)
+    val noConflictOnFixed get() = selectedValue == 0 || slot !in slot.scheduledClass.slotsFixedToZero
 
     val constraintsMet get() = if (selectedValue == 0) true else noConflictOnFixed && noConflictOnClass && noConflictOnBlock && noRecurrenceOverlaps
 
