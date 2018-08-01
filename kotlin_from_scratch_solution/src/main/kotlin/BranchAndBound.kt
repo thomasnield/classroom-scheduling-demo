@@ -9,12 +9,7 @@ class BranchNode(val selectedValue: Int, val slot: Slot, val previous: BranchNod
             .map { it.selectedValue }
             .sum() <= 1
 
-    val slotAffectingNodes get() = slot.block.affectingSlots.toSet().let { affectSlots ->
-        traverseBackwards.asSequence().filter { it.slot in affectSlots }
-    }.toList()
-
-    val recurrenceSlots by lazy { if (selectedValue == 0) emptySet() else slot.scheduledClass.affectingSlotsFor(slot.block).toSet() }
-
+    val slotAffectingNodes by lazy { traverseBackwards.asSequence().filter { it.slot in slot.block.affectingSlots }.toList() }
 
     // search backwards
     val noConflictOnBlock get() =  if (selectedValue == 0) true
@@ -22,34 +17,19 @@ class BranchNode(val selectedValue: Int, val slot: Slot, val previous: BranchNod
             .map { it.selectedValue }
             .sum() <= 1
 
-
-    // TODO: this is not preventing a nesting of Biology 101 2nd recurrence into Psych 101
-    // tight situations can result in indirect overlaps on recurrences, which need to be avoided
-    // so check for any overlaps in affecting slot zones and ensure there are none
-    val noIndirectOverlaps: Boolean get() = if (selectedValue == 0)
-        true
-    else
-
-        // get all recurrence slots of this slot if it was selected
-        recurrenceSlots
-                .asSequence()
-                .filter { it != slot }
-                .sortedByDescending { it.block.dateTimeRange.start }
-                .all { slot ->
-
-                    // get affecting slots for that recurrence slot
-                    val affectedSlotsOnRecurrence = slot.block.affectingSlots
-
-                    // look backwards and make sure no affecting slots were selected
-                    traverseBackwards.asSequence().filter {
-                        it != this && it.slot.scheduledClass != slot.scheduledClass &&  it.slot in affectedSlotsOnRecurrence
-                    }.map { it.selectedValue }
-                     .sum() == 0
-                }
+    &&
+            Block.all.asSequence()
+                    .filter { it.withinOperatingDay }
+                    .all { block ->
+                        traverseBackwards.asSequence()
+                                .filter { it.slot in  block.affectingSlots }
+                                .map { it.selectedValue }
+                                .sum() <= 1
+                    }
 
     val noConflictOnFixed get() = !(selectedValue == 1 && slot in slot.scheduledClass.slotsFixedToZero)
 
-    val constraintsMet get() = if (selectedValue == 0) true else noConflictOnClass && noConflictOnBlock && noConflictOnFixed && noIndirectOverlaps
+    val constraintsMet get() = if (selectedValue == 0) true else noConflictOnFixed && noConflictOnClass && noConflictOnBlock //&& noIndirectOverlaps
 
     val scheduleStillPossible get() = when {
 

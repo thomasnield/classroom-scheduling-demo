@@ -57,8 +57,6 @@ data class ScheduledClass(val id: Int,
         slots.rollingRecurrences(slotsNeeded = slotsNeededPerSession, gap = gap, recurrences = recurrences).toList()
     }
 
-    fun recurrenceSlotsForStart(block: Block) = recurrenceSlots.first { it.first().first().block == block }.asSequence().flatMap { it.asSequence() }
-
     /** yields slots that affect the given block for this scheduled class */
     fun affectingSlotsFor(block: Block) = recurrenceSlots.asSequence()
             .filter { it.flatMap { it }.any { it.block == block } }
