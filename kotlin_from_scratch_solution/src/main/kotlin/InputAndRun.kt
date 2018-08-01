@@ -1,5 +1,4 @@
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.LocalTime
 
 
@@ -27,29 +26,19 @@ val scheduledClasses = listOf(
         ScheduledClass(id=10, name="Orientation 101",hoursLength=1.0, recurrences=1),
 
         // TODO ojAlgo says this is feasible and finds solution more quickly
-        // We need to continuously check for feasibility as well in terms of classes being schedulable still at a given branch node
+        // may need to use a least discrepancy search
         ScheduledClass(id=11, name="Geography 300", hoursLength=3.0, recurrences=1)
         )
 
 fun main(args: Array<String>) {
 
-
-
     println("Job started at ${LocalTime.now()}\r\n")
 
     executeBranchAndBound()
 
-    ScheduledClass.all.forEach {
+    ScheduledClass.all.sortedBy { it.start }.forEach {
         println("${it.name}- ${it.daysOfWeek.joinToString("/")} ${it.start.toLocalTime()}-${it.end.toLocalTime()}")
     }
 
     println("\r\nJob ended at ${LocalTime.now()}\r\n")
-
-/*
-
-    Slot.all.asSequence().filter { it.scheduledClass.id == 8 && it.block.dateTimeRange.start == LocalDateTime.of(2017,10,19,15,0) }
-            .flatMap { it.scheduledClass.affectingSlotsFor(it.block).asSequence() }
-            .forEach {
-                println(it)
-            }*/
 }

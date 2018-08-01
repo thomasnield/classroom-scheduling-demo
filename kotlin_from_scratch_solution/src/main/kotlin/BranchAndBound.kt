@@ -4,6 +4,8 @@ class BranchNode(val selectedValue: Int, val slot: Slot, val previous: BranchNod
 
     val traverseBackwards =  generateSequence(this) { it.previous }.toList()
 
+    val selectedOnlyTraverseBackwards by lazy { traverseBackwards.filter { it.selectedValue == 1 } }
+
     val noConflictOnClass get() = if (selectedValue == 0) true else traverseBackwards.asSequence()
             .filter { it.slot.scheduledClass == slot.scheduledClass }
             .map { it.selectedValue }
@@ -18,13 +20,13 @@ class BranchNode(val selectedValue: Int, val slot: Slot, val previous: BranchNod
             .sum() <= 1
 
 
-    val noRecurrenceOverlaps get() = Block.all.asSequence()
-            .filter { it.withinOperatingDay }
+    // TODO this is slowing the solve to a crawl
+    val noRecurrenceOverlaps get() = Block.allInOperatingDay.asSequence()
             .all { block ->
-                traverseBackwards.asSequence()
+                selectedOnlyTraverseBackwards
+                        .asSequence()
                         .filter { it.slot in  block.affectingSlots }
-                        .map { it.selectedValue }
-                        .sum() <= 1
+                        .take(2).count() <= 1
             }
 
     val noConflictOnFixed get() = selectedValue == 0 || slot !in slot.scheduledClass.slotsFixedToZero
@@ -50,8 +52,7 @@ class BranchNode(val selectedValue: Int, val slot: Slot, val previous: BranchNod
         else -> true
     }
 
-    val scheduleMet get() = traverseBackwards.asSequence()
-            .filter { it.selectedValue == 1 }
+    val scheduleMet get() = selectedOnlyTraverseBackwards
             .map { it.slot.scheduledClass }
             .distinct()
             .count() == ScheduledClass.all.count()
@@ -74,7 +75,7 @@ fun executeBranchAndBound() {
     val sortedByMostConstrained = Slot.all.sortedWith(
             compareBy(
                     { it.selected?:1000 }, // fixed values go first, solvable values go last
-                    { it.block.dateTimeRange.start },
+                    { it.block.dateTimeRange.start }, // make search start at beginning of week
                     {
                         // prioritize slots dealing with recurrences
                         val dow = it.block.dateTimeRange.start.dayOfWeek
@@ -85,7 +86,7 @@ fun executeBranchAndBound() {
                             dow !in DayOfWeek.MONDAY..DayOfWeek.WEDNESDAY && it.scheduledClass.recurrences == 2 -> 500
                             else -> 0
                         }
-                    }, // encourage search to start at beginning of week
+                    },
                     {-it.scheduledClass.slotsNeededPerSession } // followed by class length,
             )
     )

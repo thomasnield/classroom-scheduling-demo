@@ -31,6 +31,11 @@ data class Block(val dateTimeRange: ClosedRange<LocalDateTime>) {
             }.map { Block(it..it.plusMinutes(15)) }
              .toList()
         }
+
+
+        val allInOperatingDay by lazy {
+            all.filter { it.withinOperatingDay }
+        }
     }
 }
 
@@ -113,9 +118,6 @@ data class ScheduledClass(val id: Int,
 data class Slot(val block: Block, val scheduledClass: ScheduledClass) {
 
     var selected: Int? = null
-
-    // TODO implement and constrain to 1
-    //val impactedDownstreamSlots get() =
 
     companion object {
 
