@@ -34,6 +34,7 @@ val scheduledClasses = listOf(
 fun main(args: Array<String>) {
 
 
+
     println("Job started at ${LocalTime.now()}\r\n")
 
     executeBranchAndBound()
@@ -45,12 +46,10 @@ fun main(args: Array<String>) {
     println("\r\nJob ended at ${LocalTime.now()}\r\n")
 
 /*
-    Slot.all.asSequence().filter { it.scheduledClass.id == 8 && it.block.dateTimeRange.start == LocalDateTime.of(2017,10,17,15,0) }
-            .flatMap { it.scheduledClass.recurrenceSlotsForStart(it.block).asSequence() }
+
+    Slot.all.asSequence().filter { it.scheduledClass.id == 8 && it.block.dateTimeRange.start == LocalDateTime.of(2017,10,19,15,0) }
+            .flatMap { it.scheduledClass.affectingSlotsFor(it.block).asSequence() }
             .forEach {
                 println(it)
-            }
-*/
-
-
+            }*/
 }

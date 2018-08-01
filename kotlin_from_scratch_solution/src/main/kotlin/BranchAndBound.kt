@@ -23,29 +23,29 @@ class BranchNode(val selectedValue: Int, val slot: Slot, val previous: BranchNod
             .sum() <= 1
 
 
-    // TODO this is coming up as INFEASIBLE
+    // TODO: this is not preventing a nesting of Biology 101 2nd recurrence into Psych 101
     // tight situations can result in indirect overlaps on recurrences, which need to be avoided
     // so check for any overlaps in affecting slot zones and ensure there are none
     val noIndirectOverlaps: Boolean get() = if (selectedValue == 0)
         true
     else
-        recurrenceSlots.asSequence()
+
+        // get all recurrence slots if selected
+        recurrenceSlots
+                .asSequence()
+                .filter { it != slot }
+                .sortedByDescending { it.block.dateTimeRange.start }
                 .all { slot ->
 
-                    val slotGroup = slot.scheduledClass.recurrenceSlotsForStart(slot.block).toSet()
+                    // get affecting slots for that recurrence slot
+                    val affectedSlotsOnRecurrence = slot.block.affectingSlots
 
-                    slotGroup.asSequence().flatMap { slotGroupSlot ->
-                        val otherRecurrenceSlots = slotGroupSlot.scheduledClass.recurrenceSlotsForStart(slot.block).toSet()
-
-                        traverseBackwards.asSequence().filter {
-                            it.slot.scheduledClass != slot.scheduledClass && it.slot in otherRecurrenceSlots
-                        }
-                    }.filterNotNull()
-                    .map { it.selectedValue }
-                    .sum() == 0
+                    // look backwards and make sure no affecting slots were selected
+                    traverseBackwards.asSequence().filter {
+                        it != this && it.slot.scheduledClass != slot.scheduledClass &&  it.slot in affectedSlotsOnRecurrence
+                    }.map { it.selectedValue }
+                     .sum() == 0
                 }
-
-
 
     val noConflictOnFixed get() = !(selectedValue == 1 && slot in slot.scheduledClass.slotsFixedToZero)
 
