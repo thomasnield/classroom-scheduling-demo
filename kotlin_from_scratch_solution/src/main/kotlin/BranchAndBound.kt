@@ -1,4 +1,5 @@
 import java.time.DayOfWeek
+import java.time.LocalDateTime
 
 class BranchNode(val selectedValue: Int, val slot: Slot, val previous: BranchNode? = null) {
 
@@ -17,27 +18,28 @@ class BranchNode(val selectedValue: Int, val slot: Slot, val previous: BranchNod
 
 
     // search backwards
-    // TODO not working
     val noConflictOnBlock get() =  if (selectedValue == 0) true
     else slotAffectingNodes.asSequence()
             .map { it.selectedValue }
             .sum() <= 1
 
 
-    // TODO this is extremely slow
+    // TODO this is coming up as INFEASIBLE
     // tight situations can result in indirect overlaps on recurrences, which need to be avoided
     // so check for any overlaps in affecting slot zones and ensure there are none
     val noIndirectOverlaps: Boolean get() = if (selectedValue == 0) true
     else
+        recurrenceSlots.asSequence().filter { it != slot }.flatMap { slot ->
 
-        // TODO
-        // get recurrence blocks, not slots
-        traverseBackwards.asSequence()
-                .filter { it.selectedValue == 1 && it != this }
-                .none { other ->
-                    // ARGH, why is Psych 300 and Biology 101 overlapping still?
-                    other.recurrenceSlots.any { it in recurrenceSlots } || recurrenceSlots.any { it in other.recurrenceSlots }
-                }
+        val slotGroup = slot.scheduledClass.recurrenceSlotsForStart(slot.block)
+
+        slotGroup.asSequence().flatMap { slotGroupSlot ->
+            traverseBackwards.asSequence().filter { it.slot in slotGroupSlot.block.affectingSlots }
+        }.filterNotNull()
+         .filter { it.slot != slot }
+        .map { it.selectedValue }
+    }.sum() == 0
+
 
 
     val noConflictOnFixed get() = !(selectedValue == 1 && slot in slot.scheduledClass.slotsFixedToZero)

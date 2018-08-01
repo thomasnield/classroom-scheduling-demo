@@ -44,8 +44,13 @@ fun main(args: Array<String>) {
 
     println("\r\nJob ended at ${LocalTime.now()}\r\n")
 
-/*    Block.all.first { it.dateTimeRange.start == LocalDateTime.of(2017,10,19,14,0) }
-            .affectingSlots
-            .forEach { println("${it.selected},${it.scheduledClass.name},${it.block.dateTimeRange.start}") }*/
+/*
+    Slot.all.asSequence().filter { it.scheduledClass.id == 8 && it.block.dateTimeRange.start == LocalDateTime.of(2017,10,17,15,0) }
+            .flatMap { it.scheduledClass.recurrenceSlotsForStart(it.block).asSequence() }
+            .forEach {
+                println(it)
+            }
+*/
+
 
 }
