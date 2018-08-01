@@ -30,7 +30,7 @@ class BranchNode(val selectedValue: Int, val slot: Slot, val previous: BranchNod
         true
     else
 
-        // get all recurrence slots if selected
+        // get all recurrence slots of this slot if it was selected
         recurrenceSlots
                 .asSequence()
                 .filter { it != slot }
