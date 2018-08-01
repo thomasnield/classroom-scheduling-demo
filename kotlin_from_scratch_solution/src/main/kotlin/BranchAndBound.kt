@@ -17,19 +17,19 @@ class BranchNode(val selectedValue: Int, val slot: Slot, val previous: BranchNod
             .map { it.selectedValue }
             .sum() <= 1
 
-    &&
-            Block.all.asSequence()
-                    .filter { it.withinOperatingDay }
-                    .all { block ->
-                        traverseBackwards.asSequence()
-                                .filter { it.slot in  block.affectingSlots }
-                                .map { it.selectedValue }
-                                .sum() <= 1
-                    }
+
+    val noRecurrenceOverlaps get() = Block.all.asSequence()
+            .filter { it.withinOperatingDay }
+            .all { block ->
+                traverseBackwards.asSequence()
+                        .filter { it.slot in  block.affectingSlots }
+                        .map { it.selectedValue }
+                        .sum() <= 1
+            }
 
     val noConflictOnFixed get() = !(selectedValue == 1 && slot in slot.scheduledClass.slotsFixedToZero)
 
-    val constraintsMet get() = if (selectedValue == 0) true else noConflictOnFixed && noConflictOnClass && noConflictOnBlock //&& noIndirectOverlaps
+    val constraintsMet get() = if (selectedValue == 0) true else noConflictOnFixed && noConflictOnClass && noConflictOnBlock && noRecurrenceOverlaps
 
     val scheduleStillPossible get() = when {
 
@@ -56,7 +56,7 @@ class BranchNode(val selectedValue: Int, val slot: Slot, val previous: BranchNod
             .distinct()
             .count() == ScheduledClass.all.count()
 
-    val isContinuable get() = constraintsMet && scheduleStillPossible && traverseBackwards.count() < Slot.all.count()
+    val isContinuable get() = constraintsMet && scheduleStillPossible &&  traverseBackwards.count() < Slot.all.count()
     val isSolution get() = scheduleMet && constraintsMet
 
     fun applySolution() {
