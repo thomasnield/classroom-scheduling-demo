@@ -14,6 +14,14 @@ data class Block(val dateTimeRange: ClosedRange<LocalDateTime>) {
 
     val affectingSlots by lazy { ScheduledClass.all.asSequence().flatMap { it.affectingSlotsFor(this).asSequence() }.toSet() }
 
+    val allAffectingSlots by lazy {
+        ScheduledClass.all.asSequence()
+            .flatMap {
+                it.allAffectingSlotsFor(this).asSequence()
+                    .filter { it.block.dateTimeRange.start <= dateTimeRange.start }
+            }.toSet()
+    }
+
     companion object {
 
         /* All operating blocks for the entire week, broken up in 15 minute increments */
@@ -46,11 +54,19 @@ data class ScheduledClass(val id: Int,
 
     /** yields slot groups for this scheduled class */
     val recurrenceSlots by lazy {
-        slots.rollingRecurrences(slotsNeeded = slotsNeededPerSession, gap = gap, recurrences = recurrences).toSet()
+        slots.rollingRecurrences(slotsNeeded = slotsNeededPerSession, gap = gap, recurrences = recurrences).toList()
     }
+
+    fun recurrenceSlotsForStart(block: Block) = recurrenceSlots.first { it.first().first().block == block }.asSequence().flatMap { it.asSequence() }
 
     /** yields slots that affect the given block for this scheduled class */
     fun affectingSlotsFor(block: Block) = recurrenceSlots.asSequence()
+            .filter { it.flatMap { it }.any { it.block == block } }
+            .map { it.first().first() }
+
+
+    /** yields slots that affect the given block for this scheduled class */
+    fun allAffectingSlotsFor(block: Block) = recurrenceSlots.asSequence()
             .filter { it.flatMap { it }.any { it.block == block } }
             .flatMap { it.asSequence().flatMap { it.asSequence() } }
             .toSet()
