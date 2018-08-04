@@ -77,7 +77,6 @@ fun executeBranchAndBound() {
     val sortedByMostConstrained = Slot.all.sortedWith(
             compareBy(
                     { it.selected?:1000 }, // fixed values go first, solvable values go last
-                    { it.block.dateTimeRange.start }, // make search start at beginning of week
                     {
                         // prioritize slots dealing with recurrences
                         val dow = it.block.dateTimeRange.start.dayOfWeek
@@ -86,10 +85,14 @@ fun executeBranchAndBound() {
                             dow != DayOfWeek.MONDAY && it.scheduledClass.recurrences == 3 -> 1000
                             dow in DayOfWeek.MONDAY..DayOfWeek.WEDNESDAY && it.scheduledClass.recurrences == 2 -> -500
                             dow !in DayOfWeek.MONDAY..DayOfWeek.WEDNESDAY && it.scheduledClass.recurrences == 2 -> 500
+                            dow in DayOfWeek.THURSDAY..DayOfWeek.FRIDAY && it.scheduledClass.recurrences == 1 -> -300
+                            dow !in DayOfWeek.THURSDAY..DayOfWeek.FRIDAY && it.scheduledClass.recurrences == 1 -> 300
                             else -> 0
                         }
                     },
-                    {-it.scheduledClass.slotsNeededPerSession } // followed by class length,
+                    {-it.scheduledClass.slotsNeededPerSession }, // followed by class length,
+                    { it.block.dateTimeRange.start.dayOfWeek } // make search start at beginning of week
+
             )
     )
 
