@@ -1,6 +1,20 @@
 import java.time.DayOfWeek
+import java.time.LocalDateTime
 
-class BranchNode(val selectedValue: Int, val slot: Slot, val previous: BranchNode? = null) {
+//TODO dynamically sort a prioritized list for each BranchNode that next explores affected regions for a booked slot
+class BranchNode(val selectedValue: Int,
+                 restOfTree: List<Slot>,
+                 val previous: BranchNode? = null) {
+
+    val slot = restOfTree.first()
+
+    // calculate remaining slots and reprioritize
+    val remainingSlots by lazy {
+        if (selectedValue == 0)
+            restOfTree.drop(1)
+        else
+            restOfTree.drop(1).sortedBy { if (it in slot.block.affectingSlots) it.block.dateTimeRange.start else LocalDateTime.MAX }
+    }
 
     val traverseBackwards =  generateSequence(this) { it.previous }.toList()
 
@@ -21,7 +35,6 @@ class BranchNode(val selectedValue: Int, val slot: Slot, val previous: BranchNod
             .sum() <= 1
 
 
-    // TODO this is slowing the solve to a crawl
     val noRecurrenceOverlaps get() = Block.allInOperatingDay.asSequence()
             .all { block ->
                 selectedOnlyTraverseBackwards
@@ -74,7 +87,7 @@ fun executeBranchAndBound() {
 
     // To avoid exhaustive search, it is critical to sort solve variables on the correct heuristic
     // First sort on slots having fixed values being first, followed by the most "constrained" slots
-    val sortedByMostConstrained = Slot.all.sortedWith(
+    val sortedByMostConstrained = Slot.all.asSequence().filter { it.selected == null }.sortedWith(
             compareBy(
                     { it.selected?:1000 }, // fixed values go first, solvable values go last
                     {
@@ -94,12 +107,15 @@ fun executeBranchAndBound() {
                     { it.block.dateTimeRange.start.dayOfWeek } // make search start at beginning of week
 
             )
-    )
+    ).toList()
 
     // this is a recursive function for exploring nodes in a branch-and-bound tree
-    fun traverse(index: Int, currentBranch: BranchNode): BranchNode? {
+    fun traverse(currentBranch: BranchNode? = null): BranchNode? {
 
-        val nextSlot = sortedByMostConstrained[index+1]
+        if (currentBranch != null && currentBranch.remainingSlots.isEmpty()) {
+            return null
+        }
+        val nextSlot = currentBranch?.remainingSlots?.first() ?: sortedByMostConstrained.first()
 
         // we want to explore possible values 0..1 unless this cell is fixed already
         val fixedValue = nextSlot.selected
@@ -108,14 +124,13 @@ fun executeBranchAndBound() {
         val range = if (fixedValue == null) intArrayOf(1,0) else intArrayOf(fixedValue)
 
         for (candidateValue in range) {
-
-            val nextBranch = BranchNode(candidateValue, nextSlot, currentBranch)
+            val nextBranch = BranchNode(candidateValue, currentBranch?.remainingSlots?: sortedByMostConstrained)
 
             if (nextBranch.isSolution)
                 return nextBranch
 
             if (nextBranch.isContinuable) {
-                val terminalBranch = traverse(index + 1, nextBranch)
+                val terminalBranch = traverse(nextBranch)
                 if (terminalBranch?.isSolution == true) {
                     return terminalBranch
                 }
@@ -126,11 +141,8 @@ fun executeBranchAndBound() {
 
 
     // start with the first Slot and set it as the seed
-    val seed = sortedByMostConstrained.first()
-            .let { BranchNode(it.selected?:throw Exception("There are no fixed values?! Seriously?"), it) }
-
     // recursively traverse from the seed and get a solution
-    val solution = traverse(0, seed)
+    val solution = traverse()
 
     solution?.traverseBackwards?.forEach { it.applySolution() }?: throw Exception("Infeasible")
 }
