@@ -13,7 +13,11 @@ class BranchNode(val selectedValue: Int,
         if (selectedValue == 0)
             restOfTree.drop(1)
         else
-            restOfTree.drop(1).sortedBy { if (it in slot.block.affectingSlots) it.block.dateTimeRange.start else LocalDateTime.MAX }
+            restOfTree.asSequence()
+                    .drop(1)
+                    .filter { it.scheduledClass != slot.scheduledClass }
+                    .sortedBy { if (slot in it.block.affectingSlots) it.block.dateTimeRange.start else LocalDateTime.MAX }
+                    .toList()
     }
 
     val traverseBackwards =  generateSequence(this) { it.previous }.toList()
@@ -47,24 +51,6 @@ class BranchNode(val selectedValue: Int,
 
     val constraintsMet get() = if (selectedValue == 0) true else noConflictOnFixed && noConflictOnClass && noConflictOnBlock
 
-    val scheduleStillPossible get() = when {
-
-        // If we reach past MONDAY in our search, we better have all of our 3-recurrences already scheduled on MONDAY
-        slot.selected == null && slot.block.dateTimeRange.start.dayOfWeek > DayOfWeek.MONDAY  ->
-                traverseBackwards.asSequence()
-                        .filter { it.slot.scheduledClass.recurrences == 3 }
-                        .groupBy { it.slot.scheduledClass }
-                        .all { (_,grp) -> grp.any { it.selectedValue == 1 } }
-
-        // If we reach past WEDNESDAY in our search, we better have all of our 2-recurrences already scheduled inside MONDAY through WEDNESDAY
-        slot.selected == null && slot.block.dateTimeRange.start.dayOfWeek > DayOfWeek.WEDNESDAY ->
-            traverseBackwards.asSequence()
-                    .filter { it.slot.scheduledClass.recurrences == 2 }
-                    .groupBy { it.slot.scheduledClass }
-                    .all { (_,grp) -> grp.any { it.selectedValue == 1 } }
-
-        else -> true
-    }
 
     val scheduleMet get() = selectedOnlyTraverseBackwards
             .asSequence()
@@ -72,9 +58,11 @@ class BranchNode(val selectedValue: Int,
             .distinct()
             .count() == ScheduledClass.all.count()
 
-    val isContinuable get() = constraintsMet && scheduleStillPossible &&  traverseBackwards.count() < Slot.all.count()
-    val isSolution get() = scheduleMet && constraintsMet && noRecurrenceOverlaps
-
+    val isContinuable get() = constraintsMet &&  remainingSlots.count() > 0
+    val isSolution get() = (scheduleMet && constraintsMet && noRecurrenceOverlaps && remainingSlots.count() == 0)/*.also {
+        println("$scheduleMet && $constraintsMet && $noRecurrenceOverlaps && ${remainingSlots.count()}")
+    }
+*/
     fun applySolution() {
         slot.selected = selectedValue
     }
@@ -113,8 +101,9 @@ fun executeBranchAndBound() {
     fun traverse(currentBranch: BranchNode? = null): BranchNode? {
 
         if (currentBranch != null && currentBranch.remainingSlots.isEmpty()) {
-            return null
+            return currentBranch
         }
+/*
         val nextSlot = currentBranch?.remainingSlots?.first() ?: sortedByMostConstrained.first()
 
         // we want to explore possible values 0..1 unless this cell is fixed already
@@ -122,8 +111,9 @@ fun executeBranchAndBound() {
 
         // selecting 1 first is an absolute must so it always attempts to put in a class before not putting it
         val range = if (fixedValue == null) intArrayOf(1,0) else intArrayOf(fixedValue)
+*/
 
-        for (candidateValue in range) {
+        for (candidateValue in intArrayOf(1,0)) {
             val nextBranch = BranchNode(candidateValue, currentBranch?.remainingSlots?: sortedByMostConstrained)
 
             if (nextBranch.isSolution)
