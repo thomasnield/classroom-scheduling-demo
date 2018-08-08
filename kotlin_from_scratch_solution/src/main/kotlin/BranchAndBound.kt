@@ -7,7 +7,9 @@ class BranchNode(val selectedValue: Int,
 
     val slot = restOfTree.first()
 
-    // calculate remaining slots and reprioritize
+    val traverseBackwards =  generateSequence(this) { it.previous }.toList()
+
+    // calculate remaining slots and prune where constraint propagates
     val remainingSlots by lazy {
         if (selectedValue == 0)
             restOfTree.minus(slot)
@@ -25,13 +27,9 @@ class BranchNode(val selectedValue: Int,
                         it.scheduledClass != slot.scheduledClass &&
                                 it !in affectedSlotsPropogated
                     }.toList()
-                    .also {
-                        it
-                    }
         }
     }
 
-    val traverseBackwards =  generateSequence(this) { it.previous }.toList()
 
     val scheduleMet get() = traverseBackwards
             .asSequence()
@@ -56,7 +54,6 @@ fun executeBranchAndBound() {
     // First sort on slots having fixed values being first, followed by the most "constrained" slots
     val sortedSlots = Slot.all.asSequence().filter { it.selected == null }.sortedWith(
             compareBy(
-                    { it.selected?:1000 }, // fixed values go first, solvable values go last
                     {
                         // prioritize slots dealing with recurrences
                         val dow = it.block.dateTimeRange.start.dayOfWeek
@@ -70,8 +67,8 @@ fun executeBranchAndBound() {
                             else -> 0
                         }
                     },
-                    {-it.scheduledClass.slotsNeededPerSession }, // followed by class length,
-                    { it.block.dateTimeRange.start.dayOfWeek } // make search start at beginning of week
+                    { it.block.dateTimeRange.start }, // make search start at beginning of week
+                    {-it.scheduledClass.slotsNeededPerSession } // followed by class length,
 
             )
     ).toList()

@@ -2,7 +2,7 @@ group 'org.nield'
 version '1.0-SNAPSHOT'
 
 buildscript {
-    ext.kotlin_version = '1.2.20'
+    ext.kotlin_version = '1.2.60'
 
     repositories {
         mavenCentral()
@@ -16,10 +16,11 @@ apply plugin: 'kotlin'
 
 repositories {
     mavenCentral()
+    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
-    compile 'org.ojalgo:ojalgo:44.0.0'
+    implementation 'com.github.optimatika:ojAlgo:develop-SNAPSHOT'
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 }
 
