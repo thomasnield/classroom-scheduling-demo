@@ -39,3 +39,21 @@ fun main(args: Array<String>) {
 
     println("\r\nJob ended at ${LocalTime.now()}\r\n")
 }
+/*
+Job started at 22:44:41.026
+
+Linear Algebra I- MONDAY/WEDNESDAY/FRIDAY 08:00-10:00
+English 101- MONDAY/WEDNESDAY/FRIDAY 10:00-11:30
+Psych 101- MONDAY/WEDNESDAY 13:00-14:00
+Geography 300- MONDAY 14:00-17:00
+Supply Chain 300- TUESDAY/THURSDAY 08:00-10:30
+Sociology 101- TUESDAY/THURSDAY 10:30-11:30
+Calculus I- TUESDAY/THURSDAY 13:00-15:00
+Math 300- TUESDAY/THURSDAY 15:00-16:30
+Orientation 101- WEDNESDAY 14:00-15:00
+Biology 101- WEDNESDAY/FRIDAY 16:00-17:00
+Psych 300- FRIDAY 13:00-16:00
+
+Job ended at 03:19:40.630
+
+ */
