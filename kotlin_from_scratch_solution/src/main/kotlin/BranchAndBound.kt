@@ -1,6 +1,5 @@
 import java.time.DayOfWeek
 
-//TODO dynamically sort a prioritized list for each BranchNode that next explores affected regions for a booked slot
 class BranchNode(val selectedValue: Int,
                  restOfTree: List<Slot>,
                  val previous: BranchNode? = null) {
