@@ -16,8 +16,8 @@ data class Block(val dateTimeRange: ClosedRange<LocalDateTime>) {
 
     val allAffectingSlots by lazy {
         ScheduledClass.all.asSequence()
-            .flatMap {
-                it.allAffectingSlotsFor(this).asSequence()
+            .flatMap { sc ->
+                sc.allAffectingSlotsFor(this).asSequence()
                     .filter { it.block.dateTimeRange.start <= dateTimeRange.start }
             }.toSet()
     }
@@ -26,8 +26,8 @@ data class Block(val dateTimeRange: ClosedRange<LocalDateTime>) {
 
         /* All operating blocks for the entire week, broken up in 15 minute increments */
         val all by lazy {
-            generateSequence(operatingDates.start.atStartOfDay()) {
-                it.plusMinutes(15).takeIf { it.plusMinutes(15) <= operatingDates.endInclusive.atTime(23,59) }
+            generateSequence(operatingDates.start.atStartOfDay()) { dt ->
+                dt.plusMinutes(15).takeIf { it.plusMinutes(15) <= operatingDates.endInclusive.atTime(23,59) }
             }.map { Block(it..it.plusMinutes(15)) }
              .toList()
         }
@@ -64,14 +64,14 @@ data class ScheduledClass(val id: Int,
 
     /** yields slots that affect the given block for this scheduled class */
     fun affectingSlotsFor(block: Block) = recurrenceSlots.asSequence()
-            .filter { it.flatMap { it }.any { it.block == block } }
+            .filter { blk -> blk.flatMap { it }.any { it.block == block } }
             .map { it.first().first() }
 
 
     /** yields slots that affect the given block for this scheduled class */
     fun allAffectingSlotsFor(block: Block) = recurrenceSlots.asSequence()
-            .filter { it.flatMap { it }.any { it.block == block } }
-            .flatMap { it.asSequence().flatMap { it.asSequence() } }
+            .filter { slot -> slot.flatMap { it }.any { it.block == block } }
+            .flatMap { slot -> slot.asSequence().flatMap { it.asSequence() } }
             .toSet()
 
     /** These slots should be fixed to zero **/
@@ -86,7 +86,7 @@ data class ScheduledClass(val id: Int,
                 .plus(
                         recurrenceSlots.asSequence()
                                 .flatMap { it.asSequence() }
-                                .filter { it.any { !it.block.withinOperatingDay }}
+                                .filter { slot -> slot.any { !it.block.withinOperatingDay }}
                                 .map { it.first() }
                 )
                 .distinct()
