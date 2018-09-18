@@ -133,6 +133,7 @@ data class ScheduledClass(val id: Int,
 
 
 data class Slot(val block: Block, val scheduledClass: ScheduledClass) {
+
     val occupied = variable().apply { if (block.withinOperatingDay) binary() else level(0) }
 
     companion object {

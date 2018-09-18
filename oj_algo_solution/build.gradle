@@ -20,7 +20,8 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.optimatika:ojAlgo:develop-SNAPSHOT'
+    //implementation 'com.github.optimatika:ojAlgo:develop-SNAPSHOT'
+    compile 'org.ojalgo:ojalgo:46.1.0'
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 }
 

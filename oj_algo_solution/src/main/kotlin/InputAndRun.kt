@@ -21,11 +21,7 @@ val scheduledClasses = listOf(
         ScheduledClass(id=5, name="Calculus I", hoursLength=2.0, recurrences=2),
         ScheduledClass(id=6, name="Linear Algebra I", hoursLength=2.0, recurrences=3),
         ScheduledClass(id=7, name="Sociology 101", hoursLength=1.0, recurrences=2),
-        ScheduledClass(id=8, name="Biology 101", hoursLength=1.0, recurrences=2),
-        ScheduledClass(id=9, name="Supply Chain 300", hoursLength=2.5, recurrences=2),
-        ScheduledClass(id=10, name="Orientation 101",hoursLength=1.0, recurrences=1),
-
-        ScheduledClass(id=11, name="Geography 300", hoursLength=3.0, recurrences=1)
+        ScheduledClass(id=8, name="Biology 101", hoursLength=1.0, recurrences=2)
 )
 
 
@@ -36,10 +32,6 @@ fun main(args: Array<String>) {
     applyConstraints()
 
     model.countVariables().run { println("$this variables") }
-
-    model.options.apply {
-        iterations_suffice = 1
-    }
 
     println(model.minimise())
 
