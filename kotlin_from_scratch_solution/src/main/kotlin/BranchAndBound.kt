@@ -50,7 +50,7 @@ fun executeBranchAndBound() {
     // pre-constraints
     ScheduledClass.all.flatMap { it.slotsFixedToZero }.forEach { it.selected = 0 }
 
-    // First sort on slots having fixed values being first, followed by the most "constrained" slots
+    // Try to encourage most "constrained" slots to be evaluated first
     val sortedSlots = Slot.all.asSequence().filter { it.selected == null }.sortedWith(
             compareBy(
                     {
