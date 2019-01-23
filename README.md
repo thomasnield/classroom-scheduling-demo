@@ -1,5 +1,5 @@
 # Schedule Generator Demo
-### Branch-and-Bound Discrete Optimization
+### Branch-and-Prune Discrete Optimization
 
 Companion blog article can be [found here](http://tomstechnicalblog.blogspot.com/2018/02/linear-programming-with-kotlin-part-iii.html).
 
