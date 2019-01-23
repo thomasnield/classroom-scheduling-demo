@@ -5,7 +5,7 @@ import java.time.LocalDateTime
 /** A discrete, 15-minute chunk of time a class can be scheduled on */
 data class Block(val dateTimeRange: ClosedRange<LocalDateTime>) {
 
-    val timeRange = dateTimeRange.let { it.start.toLocalTime()..it.endInclusive.toLocalTime() }
+    val timeRange = dateTimeRange.start.toLocalTime()..dateTimeRange.endInclusive.toLocalTime()
 
     /** indicates if this block is zeroed due to operating day/break constraints */
     val withinOperatingDay get() =  breaks.all { timeRange.start !in it } &&
@@ -13,14 +13,6 @@ data class Block(val dateTimeRange: ClosedRange<LocalDateTime>) {
             timeRange.endInclusive in operatingDay
 
     val affectingSlots by lazy { ScheduledClass.all.asSequence().flatMap { it.affectingSlotsFor(this).asSequence() }.toSet() }
-
-    val allAffectingSlots by lazy {
-        ScheduledClass.all.asSequence()
-            .flatMap { sc ->
-                sc.allAffectingSlotsFor(this).asSequence()
-                    .filter { it.block.dateTimeRange.start <= dateTimeRange.start }
-            }.toSet()
-    }
 
     companion object {
 
@@ -32,7 +24,7 @@ data class Block(val dateTimeRange: ClosedRange<LocalDateTime>) {
              .toList()
         }
 
-
+        /* only returns blocks within the operating times */
         val allInOperatingDay by lazy {
             all.filter { it.withinOperatingDay }
         }
