@@ -44,10 +44,10 @@ data class ScheduledClass(val id: Int,
                           val name: String,
                           val hoursLength: Double,
                           val recurrences: Int,
-                          val repetitionGapDays: Int = 2) {
+                          val recurrenceGapDays: Int = 2) {
 
     /** the # of slots between each recurrence */
-    val gap = repetitionGapDays * 24 * 4
+    val gap = recurrenceGapDays * 24 * 4
 
     /** the # of slots needed for a given occurrence */
     val slotsNeededPerSession = (hoursLength * 4).toInt()
@@ -96,9 +96,6 @@ data class ScheduledClass(val id: Int,
                 .toList()
     }
 
-    val availableSlots by lazy {
-        slots.filter { it !in slotsFixedToZero }
-    }
     /** translates and returns the optimized start time of the class */
     val start get() = slots.asSequence().filter { it.selected == 1 }.map { it.block.dateTimeRange.start }.min()!!
 
@@ -106,7 +103,7 @@ data class ScheduledClass(val id: Int,
     val end get() = start.plusMinutes((hoursLength * 60.0).toLong())
 
     /** returns the DayOfWeeks where recurrences take place */
-    val daysOfWeek get() = (0..(recurrences-1)).asSequence().map { start.dayOfWeek.plus(it.toLong() * repetitionGapDays) }.sorted()
+    val daysOfWeek get() = (0..(recurrences-1)).asSequence().map { start.dayOfWeek.plus(it.toLong() * recurrenceGapDays) }.sorted()
 
     companion object {
         val all by lazy { scheduledClasses }
