@@ -45,7 +45,7 @@ class BranchNode(val selectedValue: Int,
     }
 }
 
-fun executeBranchAndBound() {
+fun executeBranchingSearch() {
 
     // pre-constraints
     ScheduledClass.all.flatMap { it.slotsFixedToZero }.forEach { it.selected = 0 }
