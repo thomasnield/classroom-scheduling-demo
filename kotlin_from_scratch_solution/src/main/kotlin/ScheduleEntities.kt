@@ -3,16 +3,21 @@ import java.time.LocalDateTime
 
 
 /** A discrete, 15-minute chunk of time a class can be scheduled on */
-data class Block(val dateTimeRange: ClosedRange<LocalDateTime>) {
+data class Block(val range: ClosedRange<LocalDateTime>) {
 
-    val timeRange = dateTimeRange.start.toLocalTime()..dateTimeRange.endInclusive.toLocalTime()
+    val timeRange = range.start.toLocalTime()..range.endInclusive.toLocalTime()
 
     /** indicates if this block is zeroed due to operating day/break constraints */
     val withinOperatingDay get() =  breaks.all { timeRange.start !in it } &&
             timeRange.start in operatingDay &&
             timeRange.endInclusive in operatingDay
 
-    val affectingSlots by lazy { ScheduledClass.all.asSequence().flatMap { it.affectingSlotsFor(this).asSequence() }.toSet() }
+    val affectingSlots by lazy {
+        ScheduledClass.all.asSequence()
+                .flatMap {
+                    it.affectingSlotsFor(this).asSequence()
+                }.toSet()
+    }
 
     companion object {
 
@@ -51,7 +56,10 @@ data class ScheduledClass(val id: Int,
 
     /** yields slot groups for this scheduled class */
     val recurrenceSlots by lazy {
-        slots.rollingRecurrences(slotsNeeded = slotsNeededPerSession, gap = gap, recurrences = recurrences).toList()
+        slots.affectedWindows(slotsNeeded = slotsNeededPerSession,
+                gap = gap,
+                recurrences = recurrences,
+                mode = RecurrenceMode.FULL_ONLY).toList()
     }
 
     /** yields slots that affect the given block for this scheduled class */
@@ -59,37 +67,32 @@ data class ScheduledClass(val id: Int,
             .filter { blk -> blk.flatMap { it }.any { it.block == block } }
             .map { it.first().first() }
 
-
-    /** yields slots that affect the given block for this scheduled class */
-    fun allAffectingSlotsFor(block: Block) = recurrenceSlots.asSequence()
-            .filter { slot -> slot.flatMap { it }.any { it.block == block } }
-            .flatMap { slot -> slot.asSequence().flatMap { it.asSequence() } }
-            .toSet()
-
     /** These slots should be fixed to zero **/
     val slotsFixedToZero by lazy {
         // broken recurrences
-        slots.rollingRecurrences(slotsNeededPerSession, gap, recurrences, RecurrenceMode.PARTIAL_ONLY)
-                .asSequence()
-                .flatMap { it.asSequence() }
-                .flatMap { it.asSequence() }
-                // operating day blackouts
-                // affected slots that cross into non-operating day
-                .plus(
-                        recurrenceSlots.asSequence()
-                                .flatMap { it.asSequence() }
-                                .filter { slot -> slot.any { !it.block.withinOperatingDay }}
-                                .map { it.first() }
-                )
-                .distinct()
-                .onEach {
-                    it.selected = 0
-                }
-                .toList()
+        slots.affectedWindows(slotsNeeded = slotsNeededPerSession,
+                gap = gap,
+                recurrences = recurrences,
+                mode = RecurrenceMode.PARTIAL_ONLY
+        ) .flatMap { it.asSequence() }
+          .flatMap { it.asSequence() }
+            // operating day breaks
+            // affected slots that cross into non-operating day
+            .plus(
+                    recurrenceSlots.asSequence()
+                            .flatMap { it.asSequence() }
+                            .filter { slot -> slot.any { !it.block.withinOperatingDay }}
+                            .map { it.first() }
+            )
+            .distinct()
+            .onEach {
+                it.selected = 0
+            }
+            .toList()
     }
 
     /** translates and returns the optimized start time of the class */
-    val start get() = slots.asSequence().filter { it.selected == 1 }.map { it.block.dateTimeRange.start }.min()!!
+    val start get() = slots.asSequence().filter { it.selected == 1 }.map { it.block.range.start }.min()!!
 
     /** translates and returns the optimized end time of the class */
     val end get() = start.plusMinutes((hoursLength * 60.0).toLong())
@@ -118,14 +121,9 @@ data class Slot(val block: Block, val scheduledClass: ScheduledClass) {
     }
 }
 
-
-fun <T> List<T>.rollingBatches(batchSize: Int) = (0..size).asSequence().map { i ->
-    subList(i, (i + batchSize).let { if (it > size) size else it })
-}.filter { it.size == batchSize }
-
 enum class RecurrenceMode { PARTIAL_ONLY, FULL_ONLY, ALL }
 
-fun List<Slot>.rollingRecurrences(slotsNeeded: Int, gap: Int, recurrences: Int, mode: RecurrenceMode = RecurrenceMode.FULL_ONLY) =
+fun <T> List<T>.affectedWindows(slotsNeeded: Int, gap: Int, recurrences: Int, mode: RecurrenceMode = RecurrenceMode.FULL_ONLY) =
         (0..size).asSequence().map { i ->
             (1..recurrences).asSequence().map { (it - 1) * gap }
                     .filter { it + i < size }
@@ -140,3 +138,14 @@ fun List<Slot>.rollingRecurrences(slotsNeeded: Int, gap: Int, recurrences: Int, 
                 RecurrenceMode.PARTIAL_ONLY -> it.size < recurrences || it.any { it.size < slotsNeeded }
             }
         }
+
+
+fun main(args: Array<String>) {
+    (1..20).toList()
+            .affectedWindows(slotsNeeded = 4,
+                    gap = 6,
+                    recurrences = 3,
+                    mode = RecurrenceMode.PARTIAL_ONLY
+            )
+            .forEach { println(it) }
+}

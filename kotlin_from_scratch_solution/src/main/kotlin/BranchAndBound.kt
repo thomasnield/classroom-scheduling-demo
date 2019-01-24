@@ -55,7 +55,7 @@ fun executeBranchingSearch() {
             compareBy(
                     {
                         // prioritize slots dealing with recurrences
-                        val dow = it.block.dateTimeRange.start.dayOfWeek
+                        val dow = it.block.range.start.dayOfWeek
                         when {
                             dow == DayOfWeek.MONDAY && it.scheduledClass.recurrences == 3 -> -1000
                             dow != DayOfWeek.MONDAY && it.scheduledClass.recurrences == 3 -> 1000
@@ -66,7 +66,7 @@ fun executeBranchingSearch() {
                             else -> 0
                         }
                     },
-                    { it.block.dateTimeRange.start }, // make search start at beginning of week
+                    { it.block.range.start }, // make search start at beginning of week
                     {-it.scheduledClass.slotsNeededPerSession } // followed by class length,
 
             )
