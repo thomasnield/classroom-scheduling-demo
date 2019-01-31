@@ -1,9 +1,15 @@
 # Schedule Generator Demo
 ### Branch-and-Prune Discrete Optimization
 
-Companion blog article can be [found here](http://tomstechnicalblog.blogspot.com/2018/02/linear-programming-with-kotlin-part-iii.html).
+Companion blog article can be [found here](https://towardsdatascience.com/sudokus-and-schedules-60f3de5dfe0d).
 
-This was an exercise at creating a class schedule generator using [branch-and-bound optimization](https://en.wikipedia.org/wiki/Branch_and_bound) and constraint propogation. 
+## YouTube Walkthrough
+
+[![](https://img.youtube.com/vi/2iZBcVr5OaQ/hqdefault.jpg)](https://www.youtube.com/watch?v=2iZBcVr5OaQ)
+
+## Abstract
+
+This was an exercise at creating a class schedule generator using [branch-and-prune optimization](https://en.wikipedia.org/wiki/Branch_and_bound) and constraint propogation. 
 
 I initially used [Kotlin](http://kotlinlang.org/) with [ojAlgo](http://www.ojalgo.org/), which turned out to be effective. However, I found implementing from scratch gave me more control and allowed me to optimize for the specific problem. Both implementations are in this repo. 
 
